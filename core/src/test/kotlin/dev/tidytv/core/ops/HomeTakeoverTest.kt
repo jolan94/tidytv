@@ -1,5 +1,6 @@
 package dev.tidytv.core.ops
 
+import dev.tidytv.core.lists.HomeApp
 import dev.tidytv.core.lists.Launchers
 import dev.tidytv.core.testing.FakeTv
 import kotlinx.coroutines.test.runTest
@@ -52,6 +53,20 @@ class HomeTakeoverTest {
         assertEquals("the setup app first, while Google TV still owns Home", wraith, disables.first().substringAfterLast(' '))
         assertEquals(setOf(wraith, stock), log.records().disabledByUs() - emptySet())
         assertEquals("each is on the TV's undo list once", "$wraith\n$stock\n", tv.files[Commands.MIRROR_FILE])
+    }
+
+    @Test fun tidyTvHomeTakesOverTheTclLikeTheOthersAndRestoreBringsItBack() = runTest {
+        val tv = FakeTv.tclG06().also { it.installAs = HomeApp.TIDY }
+        val log = MemoryActionLog()
+        val out = LauncherHandover(tv, log, clock = { 5L }, sleep = {}, settle = {}, app = HomeApp.TIDY)
+            .run(apk, listOf("com.netflix.ninja"), sdk = 30)
+        assertEquals(HandoverOutcome.Done(stock), out)
+        assertEquals(HomeApp.TIDY.pkg, homePressOpens(tv))
+        val config = tv.pushed["/sdcard/Android/data/${HomeApp.TIDY.pkg}/files/config.json"]!!.decodeToString()
+        assertTrue(config.contains("\"dock_apps\": [\"com.netflix.ninja\"]"))
+        assertTrue(Restorer(tv, log) { 9L }.run() is RestoreOutcome.Done)
+        assertTrue(HomeApp.TIDY.pkg !in tv.installed)
+        assertEquals(stock, homePressOpens(tv))
     }
 
     @Test fun restoreBringsBothBackAndGoogleTvOwnsTheHomeKeyAgain() = runTest {

@@ -167,6 +167,8 @@ sealed interface HomeState {
         val app: HomeApp = HomeApp.SIMPLE,
         /** Home screens this TV can run (the styled one needs Android 8). */
         val available: List<HomeApp> = listOf(HomeApp.SIMPLE),
+        /** Which of our home screens is Home now, when [styledIsHome] (its look can be changed). */
+        val lookApp: HomeApp = HomeApp.STYLED,
         /** The Apple TV style home screen is already Home, so its look can be changed. */
         val styledIsHome: Boolean = false,
         /** The TV's home app is one TidyTV hasn't tested: no change is offered, only a one-line card. */
@@ -189,7 +191,17 @@ enum class LookId(val id: String, val title: String, val blurb: String) {
     SCENES("scenes", "Scenes", "14 painted landscapes, a new one every hour."),
 }
 
+/** The ready-made wallpapers for TidyTV Home. */
+enum class WallId(val id: String, val title: String) {
+    SUNSET("sunset", "Sunset"),
+    MOUNTAINS("mountains", "Mountains"),
+    CITY("city", "City night"),
+    AURORA("aurora-sky", "Aurora"),
+}
+
 data class LookState(
+    /** Which home screen the looks are for. */
+    val app: HomeApp = HomeApp.STYLED,
     /** A look id, or "photo", while it's being put on the TV. */
     val applying: String? = null,
     /** The look set in this session. */
@@ -1279,19 +1291,27 @@ class WizardViewModel(
             .map { DockApp(it, AppLabels.label(it)) }
             .sortedBy { it.label.lowercase() }
         val available = HomeApp.entries.filter { a -> snap.info.sdk >= a.minSdk && (a.fromPlayStore || launcherApk(a) != null) }
-        _ui.update { it.copy(home = HomeState.Offer(options, options.take(8).map { o -> o.pkg }, HomeApp.SIMPLE, available, untested = !homeTested())) }
+        val first = HomeApp.TIDY.takeIf { it in available } ?: HomeApp.SIMPLE
+        _ui.update { it.copy(home = HomeState.Offer(options, options.take(8).map { o -> o.pkg }, first, available, untested = !homeTested())) }
         fetchIcons(options.map { it.pkg })
         viewModelScope.launch {
             val home = withShell { s -> dev.tidytv.core.ops.Parse.component(s.run(dev.tidytv.core.ops.Commands.RESOLVE_HOME)) }
-            if (home?.substringBefore('/') == HomeApp.STYLED.pkg) _ui.update { u ->
-                (u.home as? HomeState.Offer)?.let { u.copy(home = it.copy(styledIsHome = true)) } ?: u
-            }
+            val own = HomeApp.of(home?.substringBefore('/'))?.takeIf { it.hasLooks }
+            if (own != null) { lookApp = own; _ui.update { u ->
+                (u.home as? HomeState.Offer)?.let { u.copy(home = it.copy(styledIsHome = true, lookApp = own)) } ?: u
+            } }
         }
     }
 
     // ---------- Looks for the Apple TV style home screen ----------
 
-    fun openLook() = _ui.update { it.copy(home = HomeState.Look(LookState(), back = it.home)) }
+    /** Which home screen the look screen changes. */
+    private var lookApp: HomeApp = HomeApp.STYLED
+
+    fun openLook() {
+        (_ui.value.home as? HomeState.Installed)?.app?.takeIf { it.hasLooks }?.let { lookApp = it }
+        _ui.update { it.copy(home = HomeState.Look(LookState(app = lookApp), back = it.home)) }
+    }
 
     fun closeLook() {
         val l = _ui.value.home as? HomeState.Look ?: return
@@ -1303,6 +1323,13 @@ class WizardViewModel(
         val files = if (id == LookId.CLASSIC) dev.tidytv.core.ops.LookFiles("default", "{}") else looks(id.id)
         if (files == null) return setLook { it.copy(message = RestoreUi.Finished("That look isn't in this copy of TidyTV.", ok = false)) }
         putLook(id.id, "${id.title} is on your TV.") { files }
+    }
+
+    /** A ready-made wallpaper for TidyTV Home. */
+    fun applyWallpaper(w: WallId) {
+        val files = looks("wall-${w.id}")
+            ?: return setLook { it.copy(message = RestoreUi.Finished("That wallpaper isn't in this copy of TidyTV.", ok = false)) }
+        putLook(w.id, "${w.title} is on your TV.") { files }
     }
 
     /** The owner's own photo, made small on the phone first (see Wallpaper). */
@@ -1320,7 +1347,7 @@ class WizardViewModel(
         wizard(WizardEvent.Busy(true))
         viewModelScope.launch {
             val files = withContext(imageWork) { runCatching { make() }.getOrNull() }
-            val ok = files != null && withShell { s -> dev.tidytv.core.ops.LauncherLook(s).apply(files) } == true
+            val ok = files != null && withShell { s -> dev.tidytv.core.ops.LauncherLook(s, pkg = lookApp.pkg).apply(files) } == true
             trace.line("look $id: ok=$ok")
             val msg = when {
                 files == null -> RestoreUi.Finished("That photo couldn't be opened. Try another one.", ok = false)

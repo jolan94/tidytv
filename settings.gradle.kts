@@ -21,3 +21,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "tidytv"
 include(":core", ":adb", ":app")
+include(":launcher")

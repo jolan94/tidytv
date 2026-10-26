@@ -52,6 +52,7 @@ fun LookScreen(
     onClose: () -> Unit,
     onApplyLook: (LookId) -> Unit,
     onApplyPhoto: (PickedFile) -> Unit,
+    onApplyWallpaper: (dev.tidytv.app.WallId) -> Unit = {},
 ) {
     val resolver = LocalContext.current.contentResolver
     val busy = look.applying != null
@@ -77,7 +78,7 @@ fun LookScreen(
         bottom = { BigButton("Done", onClose, enabled = !busy) },
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Title("Pick a look", Modifier.weight(1f))
+            Title(if (look.app == dev.tidytv.core.lists.HomeApp.TIDY) "Pick a wallpaper" else "Pick a look", Modifier.weight(1f))
             MoreInfo("Looks") {
                 Body("Changes the wallpaper, dock and colours of the Apple TV style home screen. Your apps stay the same.", color = Tidy.Ink)
                 Body("Your own photo: pick any photo from your phone. TidyTV crops it to fit the TV and makes it small before sending.", color = Tidy.Ink)
@@ -86,10 +87,13 @@ fun LookScreen(
         look.message?.let { if (it.ok) InfoChip(Icons.Rounded.CheckCircle, it.message) else Note(it.message) }
         val photoOn = look.current == "photo"
         // The looks, then "Your photo" (null) as the last tile.
-        for (row in (LookId.entries + null).chunked(2)) {
+        val tidy = look.app == dev.tidytv.core.lists.HomeApp.TIDY
+        val tiles: List<Any?> = if (tidy) dev.tidytv.app.WallId.entries + null else LookId.entries + null
+        for (row in tiles.chunked(2)) {
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 for (id in row) Box(Modifier.weight(1f)) {
-                    if (id != null) LookCard(id, selected = look.current == id.id, applying = look.applying == id.id, enabled = !busy) { onApplyLook(id) }
+                    if (id is dev.tidytv.app.WallId) WallpaperCard(id, selected = look.current == id.id, applying = look.applying == id.id, enabled = !busy) { onApplyWallpaper(id) }
+                    else if (id is LookId) LookCard(id, selected = look.current == id.id, applying = look.applying == id.id, enabled = !busy) { onApplyLook(id) }
                     else ChoiceCard("Your photo", selected = photoOn, enabled = !busy, onClick = {
                         picker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
                     }, preview = {
@@ -104,6 +108,22 @@ fun LookScreen(
         }
         if (look.applying == "photo") Text("Making it TV-sized and sending…", style = MaterialTheme.typography.bodyMedium, color = Tidy.Ink)
     }
+}
+
+@Composable
+private fun WallpaperCard(id: dev.tidytv.app.WallId, selected: Boolean, applying: Boolean, enabled: Boolean, onClick: () -> Unit) {
+    val context = LocalContext.current
+    val bitmap = remember(id) {
+        runCatching {
+            context.assets.open("wallpapers/${id.id}.jpg").use { BitmapFactory.decodeStream(it, null, BitmapFactory.Options().apply { inSampleSize = 4 }) }
+        }.getOrNull()
+    }
+    ChoiceCard(id.title, selected = selected, onClick = onClick, enabled = enabled, preview = {
+        Box(Modifier.fillMaxWidth().aspectRatio(16f / 9f).clip(RoundedCornerShape(12.dp)).background(Tidy.Ink)) {
+            if (bitmap != null) Image(bitmap.asImageBitmap(), "${id.title} wallpaper", Modifier.fillMaxWidth().aspectRatio(16f / 9f), contentScale = ContentScale.Crop)
+            if (applying) Box(Modifier.matchParentSize().background(Color.Black.copy(alpha = 0.45f)), contentAlignment = Alignment.Center) { Spinner(26.dp, Color.White) }
+        }
+    })
 }
 
 @Composable
