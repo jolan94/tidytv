@@ -131,13 +131,15 @@ class WizardViewModelTest {
         val info = dev.tidytv.core.ops.TvReader.snapshot(DemoBackend().tv).info
         val ids = dev.tidytv.core.lists.ModelMatcher.match(info, catalog.lists, limit = Int.MAX_VALUE).map { it.list.id }.toSet()
         val examples = File("../upstream/cleanyourtv/examples")
-        return ListCatalog(examples.listFiles()!!.filter { it.isDirectory }.associate { d ->
+        val trimmed = examples.listFiles()!!.filter { it.isDirectory }.associate { d ->
             val text = File(d, "debloat.txt").readText()
             d.name to if (d.name !in ids) text else text.lines().filter { l ->
                 val t = l.trim()
                 t.isEmpty() || t.startsWith("#") || t.substringBefore(' ').substringBefore('#') in keep
             }.joinToString("\n")
-        })
+        }
+        // The real lists now keep nearly every TCL app somewhere, so one other TV's list brings the extra apps.
+        return ListCatalog(trimmed + ("zz-other-tv" to "# Other TV (device zzother)\ncom.zzother.bloat\ncom.zzother.junk\ncom.zzother.extra\n"))
     }
 
     @Test fun aFullListOffersNoMoreApps() = runTest(dispatcher) {
@@ -159,13 +161,14 @@ class WizardViewModelTest {
         val keep = full.candidates.take(1).map { it.pkg }.toSet()
 
         val demo = DemoBackend()
+        demo.tv.installed += listOf("com.zzother.bloat", "com.zzother.junk", "com.zzother.extra")
         val vm = vm(demo, catalogWithShortList(keep))
         vm.choose(TvKind.ANDROID_TV)
         connectToDemo(vm)
         var r = vm.ui.value.review
         val own = r.candidates.map { it.pkg }.toSet()
         assertTrue("$own", own.size < ReviewState.FEW && own.containsAll(keep))
-        assertTrue("a short list says so", r.fewFound)
+        assertTrue("a short list says so: noList=${r.noList} own=${r.candidates.size} more=${r.moreAvailable.size} extra=${r.extra.size} list=${r.listTitle} keep=$keep", r.fewFound)
         assertTrue(r.moreAvailable.isNotEmpty())
         assertTrue(r.extra.isEmpty())
 
@@ -308,6 +311,71 @@ class WizardViewModelTest {
             assertTrue(!vm.ui.value.check.running)
             assertTrue(off.first() !in tv.disabled)
         }
+    }
+
+    @Test fun aSlowOrDroppedFirstReadAfterAllowIsRetriedInsteadOfFailing() = runTest(dispatcher) {
+        val demo = DemoBackend()
+        demo.tv.dropOnPrefix = "getprop" // the link drops on the first read, as some TVs do right after Allow
+        val vm = vm(demo)
+        vm.choose(TvKind.ANDROID_TV)
+        connectToDemo(vm, tidy = false)
+        assertEquals(Step.HUB, vm.ui.value.wizard.step)
+        assertEquals("no problem shown", null, vm.ui.value.problem)
+        assertTrue(vm.ui.value.tv != null)
+    }
+
+    @Test fun aTvWithNoListStillGetsOtherTvsAppsUntickedAndAWayToSendItsDetails() = runTest(dispatcher) {
+        val demo = DemoBackend()
+        demo.tv.props["ro.product.model"] = "Zzyx Qwerty 9000"
+        demo.tv.props["ro.product.brand"] = "Zzyx"
+        demo.tv.props["ro.product.manufacturer"] = "Zzyx"
+        demo.tv.props["ro.product.device"] = "zq9000"
+        demo.tv.props["ro.product.name"] = "zq9000_stb"
+        val vm = vm(demo)
+        vm.choose(TvKind.ANDROID_TV)
+        connectToDemo(vm)
+        val r = vm.ui.value.review
+        assertTrue("no list matched", r.noList)
+        assertEquals(BackupStatus.Saved, r.backup)
+        assertTrue("other TVs' apps are offered", r.extra.isNotEmpty())
+        assertTrue("none are ticked", r.selected.isEmpty())
+        assertTrue(r.extra.none { dev.tidytv.core.lists.Protected.isProtected(it.pkg) || dev.tidytv.core.lists.Launchers.isHomeApp(it.pkg) })
+        assertTrue(r.tvDetails.contains("Zzyx Qwerty 9000") && r.tvDetails.contains("Zzyx"))
+        assertTrue("no serial or address in what we ask them to send", !r.tvDetails.contains("SERIAL", ignoreCase = true) && !r.tvDetails.contains("192.168"))
+        // The owner can still pick one and turn it off, with the backup already saved.
+        val pick = r.extra.first().pkg
+        vm.toggleApp(pick); vm.startTidy(); advanceUntilIdle()
+        assertTrue("$pick is off", pick in demo.tv.disabled)
+    }
+
+    @Test fun theHubShowsFreeStorageAndMemory() = runTest(dispatcher) {
+        val demo = DemoBackend()
+        val vm = vm(demo)
+        vm.choose(TvKind.ANDROID_TV)
+        connectToDemo(vm, tidy = false)
+        advanceUntilIdle()
+        val f = vm.ui.value.hubFacts
+        assertTrue("storage is read: $f", f.freeStorageMb != null && f.freeStorageMb!! > 0)
+        assertTrue("memory is read: $f", f.freeRamMb != null && f.freeRamMb!! > 0)
+    }
+
+    @Test fun theChosenFolderIsUsedAndRemembered() = runTest(dispatcher) {
+        val demo = DemoBackend()
+        val tv: FakeTv = demo.tv
+        val vm = vm(demo)
+        vm.choose(TvKind.ANDROID_TV)
+        connectToDemo(vm, tidy = false)
+        vm.openFiles(); advanceUntilIdle()
+        assertEquals(dev.tidytv.core.ops.SendFolder.DOWNLOAD, vm.ui.value.files.folder)
+        vm.setSendFolder(dev.tidytv.core.ops.SendFolder.MOVIES)
+        vm.sendFiles(listOf(PickedFile("clip.mp4", 3) { byteArrayOf(1, 2, 3).inputStream() })); advanceUntilIdle()
+        assertTrue(tv.pushed.containsKey("/sdcard/Movies/TidyTV/clip.mp4"))
+        vm.toHub(); advanceUntilIdle()
+        val again = vm(demo)
+        again.choose(TvKind.ANDROID_TV)
+        connectToDemo(again, tidy = false)
+        again.openFiles(); advanceUntilIdle()
+        assertEquals("remembered for this TV", dev.tidytv.core.ops.SendFolder.MOVIES, again.ui.value.files.folder)
     }
 
     @Test fun oneAppCanBeTurnedBackOnByItself() = runTest(dispatcher) {
@@ -672,7 +740,20 @@ class WizardViewModelTest {
         val problem = vm.ui.value.home as HomeState.Problem
         assertEquals(HomeAction.TURN_OFF_SETUP_APP, problem.action)
         assertTrue(problem.message, problem.message.contains("Wi-Fi") && problem.message.contains("old home screen stays"))
+        assertTrue("it says how to fix it", problem.message.contains("Forget") && problem.message.contains("join it again"))
         assertTrue("nothing was turned off", demo.tv.disabled.none { it.contains("launcherx") || it.contains("setupwraith") })
+
+        // The owner forgets the Wi-Fi on the TV and joins again: the network now belongs to the system.
+        demo.tv.wifiOwner = "com.android.settings:1000"
+        vm.homeAction(HomeAction.TURN_OFF_SETUP_APP, onEthernet = false); advanceUntilIdle()
+        assertEquals(HomeState.Installed(dev.tidytv.core.lists.HomeApp.SIMPLE), vm.ui.value.home)
+    }
+
+    @Test fun theCableOverrideStillWorksWhenTheWifiIsOwnedBySetup() = runTest(dispatcher) {
+        val demo = DemoBackend().apply { tv.wifiOwner = "com.google.android.tungsten.setupwraith:10130" }
+        val vm = vm(demo)
+        tidyThenOfferHome(vm)
+        vm.installHome(); advanceUntilIdle()
 
         vm.homeAction(HomeAction.TURN_OFF_SETUP_APP, onEthernet = true); advanceUntilIdle()
         assertEquals(HomeState.Installed(dev.tidytv.core.lists.HomeApp.SIMPLE), vm.ui.value.home)

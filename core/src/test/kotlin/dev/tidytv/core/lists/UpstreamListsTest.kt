@@ -107,13 +107,14 @@ class UpstreamListsTest {
     }
 
     @Test fun aTvThatOnlySaysSmartTvIsNeverMatchedToAnotherBrand() {
-        // A real TCL G06 (Google TV 11): it reports its model as just "Smart TV". 0.6.0 matched it to a
-        // Fire TV list whose title says "smart TV", and offered one app.
-        val g06 = TvInfo("Smart TV", "G06", "G06_2K_GB", "TCL", "TCL", 30, "11", "x")
+        // A TCL Google TV 11 that reports its model as just "Smart TV" (a G06 before cleanyourtv added a G06 list;
+        // G99 stands in for a TCL board nobody has listed). 0.6.0 matched it to a Fire TV list whose title says
+        // "smart TV", and offered one app.
+        val g06 = TvInfo("Smart TV", "G99", "G99_2K_GB", "TCL", "TCL", 30, "11", "x")
         val installed = catalog.byId("tcl-g07-google-tv")!!.entries.map { it.pkg }.toSet()
         val m = ModelMatcher.match(g06, catalog.lists, installed = installed)
         assertTrue(m.joinToString { it.list.id }, m.all { it.list.id.startsWith("tcl-") })
-        assertFalse("no list is for the G06, so nothing is exact", m.first().exact)
+        assertFalse("no list is for this board, so nothing is exact", m.first().exact)
         assertEquals("the closest list by the apps on the TV comes first", "tcl-g07-google-tv", m.first().list.id)
         for (other in listOf(
             TvInfo("Android TV", "x1", "y1", "Acme", "Acme", 30, "11", "x"),

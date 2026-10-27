@@ -70,6 +70,8 @@ object Protected {
         "inputmethod", ".ime", "leanback.ime", "keyboard",
         "bluetooth", "bt_rcu", "btrcu", "rcuservice", "autopair", "remotepair",
         "networkstack", "permissioncontroller", "packageinstaller",
+        // USB drives and file browsing: a TV whose owner could no longer open a USB stick (feedback ba2806).
+        "documentsui", "android.mtp", "mtpservice", "usbstorage", "externalstorage",
     )
 
     /** Android's own content providers, except the few a TV can live without (upstream PROMPT.md). */

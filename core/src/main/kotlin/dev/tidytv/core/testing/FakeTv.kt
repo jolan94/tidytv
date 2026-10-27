@@ -423,8 +423,10 @@ class FakeTv(
                 }.joinToString("")
             c.startsWith("cmd package query-activities") -> "No activities found\n"
             c.startsWith("am start -n ") -> { launched += args[3]; "Starting: Intent { cmp=${args[3]} }\n" }
-            c == Commands.LIST_SEND_DIR -> pushed.keys.filter { it.startsWith(Commands.SEND_DIR + "/") }
-                .joinToString("") { it.removePrefix(Commands.SEND_DIR + "/") + "\n" } + "ok\n"
+            c.startsWith("mkdir -p /sdcard/") && c.endsWith("/TidyTV; echo ok") || c == Commands.LIST_SEND_DIR -> {
+                val dir = if (c == Commands.LIST_SEND_DIR) Commands.SEND_DIR else c.removePrefix("mkdir -p ").substringBefore(" &&")
+                pushed.keys.filter { it.startsWith("$dir/") }.joinToString("") { it.removePrefix("$dir/") + "\n" } + "ok\n"
+            }
             c.startsWith("df ") -> "Filesystem     1K-blocks    Used Available Use% Mounted on\n/dev/fuse       30000000 22000000 $freeKb  74% /storage/emulated\n"
 
             else -> "/system/bin/sh: ${args.first()}: not found\n"

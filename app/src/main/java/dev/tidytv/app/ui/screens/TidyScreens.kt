@@ -198,7 +198,7 @@ fun HomeScreenStep(
                 Body(s.message)
                 if (s.action == HomeAction.TURN_OFF_SETUP_APP) Row(verticalAlignment = Alignment.CenterVertically) {
                     Checkbox(ethernet, { ethernet = it })
-                    Text("My TV is plugged in with a network cable", style = MaterialTheme.typography.bodyLarge, color = Tidy.Ink)
+                    Text("My TV uses a network cable, not Wi-Fi", style = MaterialTheme.typography.bodyLarge, color = Tidy.Ink)
                 }
                 if (s.rescue.isNotEmpty()) Outline {
                     Text("If the TV looks wrong, these commands put it back (from a computer):", style = MaterialTheme.typography.bodyMedium, color = Tidy.Muted)
@@ -242,8 +242,8 @@ private val HomeApp.preview: Int? get() = when (this) {
 }
 
 val HomeApp.tip: String get() = when (this) {
-    HomeApp.SIMPLE -> "Press Home on your remote to see it. Hold OK on an app to move or replace it."
-    HomeApp.STYLED -> "Press Home on your remote to see it. Your chosen apps sit in the dock at the bottom."
+    HomeApp.SIMPLE -> "Press Home on your remote to see it. Hold OK (or press Menu) on an app to move, replace or remove it. The Add app tile adds more."
+    HomeApp.STYLED -> "Press Home on your remote to see it. Hold OK on an app to move or remove it, and use the App library button to add apps back. Hold OK on Settings for more options."
     HomeApp.PROJECTIVY -> "Press Home on your remote to see it. Change its look in Projectivy's own settings."
 }
 

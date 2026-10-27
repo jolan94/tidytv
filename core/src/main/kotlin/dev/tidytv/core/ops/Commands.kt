@@ -187,6 +187,8 @@ object Commands {
     /** Where Send files puts things: a folder the TV's file manager and media apps can see. */
     const val SEND_DIR = "/sdcard/Download/TidyTV"
     const val LIST_SEND_DIR = "mkdir -p $SEND_DIR && ls -1 $SEND_DIR; echo ok"
+    private val SEND_PATH = Regex("^/sdcard/[A-Za-z]{3,12}/TidyTV$")
+    fun listSendDir(path: String): String { require(SEND_PATH.matches(path)) { "bad folder" }; return "mkdir -p $path && ls -1 $path; echo ok" }
     const val DF_SDCARD = "df /sdcard"
 
     private val NAMESPACES = setOf("global", "secure", "system")

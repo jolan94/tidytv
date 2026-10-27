@@ -183,6 +183,10 @@ private fun PressAllow(state: ConnectState.PressAllow, onEvent: (ConnectEvent) -
         AllowDialogPicture()
         Body("Tick Always allow first, so it never asks again.")
         if (state.canRetry) Note("No answer yet? If the prompt went away, tap Try again.")
+        MoreInfo("Asked again every time?") {
+            Body("If you didn't tick Always allow, the TV asks every time. Connect again and tick it.", color = Tidy.Ink)
+            Body("Still asked? In the TV's Developer options turn on \"Disable adb authorization timeout\" (the name changes by TV), and make sure Wireless debugging stays on.", color = Tidy.Ink)
+        }
     }
 }
 

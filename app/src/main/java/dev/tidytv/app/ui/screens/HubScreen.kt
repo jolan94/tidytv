@@ -33,6 +33,7 @@ import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.rounded.Apps
 import androidx.compose.material.icons.rounded.CleaningServices
 import androidx.compose.material.icons.rounded.Home
+import androidx.compose.material.icons.rounded.Memory
 import androidx.compose.material.icons.rounded.Restore
 import androidx.compose.material.icons.rounded.Shield
 import androidx.compose.material.icons.rounded.SettingsRemote
@@ -68,6 +69,7 @@ fun HubScreen(
     onSpace: () -> Unit = {},
     onAds: () -> Unit = {},
     onApps: () -> Unit = {},
+    facts: dev.tidytv.app.HubFacts = dev.tidytv.app.HubFacts(),
 ) {
     val items = buildList {
         add(HubItem(Icons.Rounded.CleaningServices, "Tidy up", Tidy.Blue, Color.White, if (appsOff > 0) "$appsOff off" else null, onTidy))
@@ -83,6 +85,10 @@ fun HubScreen(
     ScreenFrame(top = { Row(Modifier.fillMaxWidth()) { TextLink("Change TV", onBack, icon = Icons.AutoMirrored.Rounded.ArrowBack) } }) {
         HeroMascot(mood = Mood.HAPPY, height = 84.dp)
         if (tv != null) TvCard(tv.title, tv.model)
+        if (facts.any) dev.tidytv.app.ui.ChipRow(center = true) {
+            facts.freeStorageMb?.let { dev.tidytv.app.ui.InfoChip(Icons.Rounded.Storage, "${gbOrMb(it)} free", color = Tidy.BlueSoft, textColor = Tidy.Ink) }
+            facts.freeRamMb?.let { dev.tidytv.app.ui.InfoChip(Icons.Rounded.Memory, "${gbOrMb(it)} RAM free", color = Tidy.GreenSoft, textColor = Tidy.GreenInk) }
+        }
         Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
             items.chunked(2).forEach { pair ->
                 Row(Modifier.fillMaxWidth().height(IntrinsicSize.Min), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -124,3 +130,5 @@ private fun RowScope.HubTile(item: HubItem) {
         }
     }
 }
+
+private fun gbOrMb(mb: Int) = if (mb >= 1024) String.format(java.util.Locale.US, "%.1f GB", mb / 1024.0) else "$mb MB"

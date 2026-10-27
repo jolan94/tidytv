@@ -114,7 +114,11 @@ fun ReviewScreen(
     val n = s.selected.size
     ScreenFrame(bottom = {
         when {
-            s.noList -> BigButton("Finish", onDone, color = Tidy.Blue)
+            s.noList && s.extra.isEmpty() -> BigButton("Finish", onDone, color = Tidy.Blue)
+            s.noList -> BigButton(
+                if (n == 0) "Pick apps to turn off" else "Turn off $n app${if (n == 1) "" else "s"}", onStart,
+                color = Tidy.Green, enabled = s.backup == BackupStatus.Saved && n > 0,
+            )
             else -> BigButton(
                 if (n == 0) "Pick apps to turn off" else "Turn off $n app${if (n == 1) "" else "s"}", onStart,
                 color = Tidy.Green, enabled = s.backup == BackupStatus.Saved && n > 0,
@@ -123,14 +127,21 @@ fun ReviewScreen(
     }) {
         if (s.backup != BackupStatus.Saved) { BackupHeader(s.backup, onRetryBackup); return@ScreenFrame }
         if (s.noList) {
+            val actions = dev.tidytv.app.ui.LocalAppActions.current
             BackupHeader(s.backup, onRetryBackup)
             Title("No tested list for this TV yet")
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("Nothing will be changed.", style = MaterialTheme.typography.bodyLarge, color = Tidy.Muted, modifier = Modifier.weight(1f))
+                Text(if (s.extra.isEmpty()) "Nothing will be changed." else "Nothing is picked. You choose.", style = MaterialTheme.typography.bodyLarge, color = Tidy.Muted, modifier = Modifier.weight(1f))
                 MoreInfo("No tested list yet") {
-                    Body("Your backup is saved, but TidyTV only turns apps off from a list someone has checked on the same model. Nothing will be changed.", color = Tidy.Ink)
+                    Body("Your backup is saved. TidyTV only picks apps from a list someone has checked on the same model, and there isn't one for yours yet.", color = Tidy.Ink)
+                    Body("Below are apps other TVs' lists turn off that are installed on yours. Look them up, pick only what you know, and Restore everything turns them back on.", color = Tidy.Ink)
                 }
             }
+            if (s.extra.isNotEmpty()) MoreAppsCard(s.extra, s.selected, onToggleApp)
+            TextLink("Send my TV's details so it can be added", {
+                actions.feedback(dev.tidytv.app.ui.FeedbackRequest(dev.tidytv.app.data.FeedbackKind.FEATURE, "no-list", s.tvDetails))
+            })
+            AllAppsCard(onAllApps)
             return@ScreenFrame
         }
         ChipRow {

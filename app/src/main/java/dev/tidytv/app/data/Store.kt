@@ -70,6 +70,15 @@ class Store(private val root: File) {
         f.writeText(pkgs.joinToString("\n"))
     }
 
+    /** Where Send files puts things on this TV; Downloads until the owner picks another folder. */
+    fun sendFolder(serial: String): String? = File(tvDir(serial), "sendfolder.txt").takeIf { it.exists() }?.readText()?.trim()
+
+    fun saveSendFolder(serial: String, name: String) {
+        val f = File(tvDir(serial), "sendfolder.txt")
+        f.parentFile?.mkdirs()
+        f.writeText(name)
+    }
+
     fun remember(tv: KnownTv) {
         val f = File(tvDir(tv.serial), "tv.json")
         f.parentFile?.mkdirs()

@@ -94,7 +94,7 @@ fun CheckScreen(
                     if (back == 0) "Home screen changed" else if (back == 1) "1 app to turn off" else "$back apps to turn off",
                     "${report.stillOff} still off", Tidy.Amber, Tidy.AmberInk,
                 )
-                if (report.backOn.isNotEmpty()) PackageCard("Switched back on", "Usually after a TV update.", report.backOn, labels)
+                if (report.backOn.isNotEmpty()) PackageCard("Switched back on", "Usually after a restart or a TV update.", report.backOn, labels)
                 if (report.newOnList.isNotEmpty()) PackageCard("New since your last tidy", null, report.newOnList, labels)
                 if (report.homeChanged) {
                     Note("Your TV's old home screen took over again. Open Home screen on My TV to switch back.")

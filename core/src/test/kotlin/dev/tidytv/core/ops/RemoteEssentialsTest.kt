@@ -35,3 +35,11 @@ class RemoteEssentialsTest {
         assertTrue(TvCheck(tv, log).run(emptyList(), installedAtBackup = null).remoteOff.isEmpty())
     }
 }
+
+class StorageHelpersTest {
+    @Test fun usbAndFileBrowsingHelpersAreNeverOffered() {
+        for (pkg in listOf("com.android.documentsui", "com.google.android.documentsui", "com.android.mtp", "com.android.externalstorage", "com.vendor.mtpservice", "com.vendor.usbstorage")) {
+            assertTrue("$pkg should be protected", Protected.isProtected(pkg))
+        }
+    }
+}

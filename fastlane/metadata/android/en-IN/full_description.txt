@@ -24,7 +24,7 @@ MORE THAN A CLEAN-UP
 • Check my TV: finds apps that a TV update quietly turned back on.
 
 BUILT FOR REAL TVS
-Clean-up lists are tested on a real TV for 252 models, including Sony, TCL, Xiaomi, Hisense, Philips, Chromecast with Google TV and NVIDIA Shield.
+Clean-up lists are tested on a real TV for 335 models, including Sony, TCL, Xiaomi, Hisense, Philips, Chromecast with Google TV and NVIDIA Shield.
 
 WORKS WITH
 • Android TV and Google TV sets and boxes

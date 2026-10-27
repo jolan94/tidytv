@@ -81,6 +81,7 @@ fun DoneScreen(
     onStartOver: () -> Unit,
     onTurnOn: (String) -> Unit = {},
     onMyTv: () -> Unit = {},
+    onCheck: () -> Unit = {},
 ) {
     val restoring = s.restore is RestoreUi.Running
     val actions = LocalAppActions.current
@@ -124,6 +125,11 @@ fun DoneScreen(
             }
         }
         if (!restoring) OffApps(s, labels, onTurnOn)
+        if (result) Outline {
+            Text("Do they stay off?", style = MaterialTheme.typography.titleMedium, color = Tidy.Ink)
+            Text("Some TVs turn apps back on when they restart or update. Check my TV restarts the TV and tells you which came back, then turns them off again.", style = MaterialTheme.typography.bodyMedium, color = Tidy.Muted)
+            TextLink("Check after a restart", onCheck, icon = Icons.Rounded.Restore)
+        }
         BigButton(
             if (restoring) "Restoring…" else "Restore everything", onRestore, color = Tidy.Green, enabled = !restoring,
             leading = if (restoring) null else { { Icon(Icons.Rounded.Restore, null, tint = Color.White) } },

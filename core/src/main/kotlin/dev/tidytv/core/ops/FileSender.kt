@@ -8,18 +8,33 @@ sealed interface SendResult {
     data object Disconnected : SendResult
 }
 
+/** Where on the TV's shared storage Send files puts things; always in a TidyTV subfolder so nothing is overwritten. */
+enum class SendFolder(val dir: String, val title: String) {
+    DOWNLOAD("Download", "Downloads"),
+    MOVIES("Movies", "Movies"),
+    MUSIC("Music", "Music"),
+    PICTURES("Pictures", "Pictures"),
+    DOCUMENTS("Documents", "Documents");
+
+    val path: String get() = "/sdcard/$dir/TidyTV"
+
+    companion object {
+        fun of(name: String?): SendFolder = entries.firstOrNull { it.name == name } ?: DOWNLOAD
+    }
+}
+
 /**
  * Sends files from the phone to the TV's Downloads › TidyTV folder, where the TV's own file
  * manager or media player can open them. Names are made safe and unique on the TV; free space is
  * checked first so a big video fails up front rather than halfway.
  */
-class FileSender(private val tv: TvShell) {
+class FileSender(private val tv: TvShell, private val folder: SendFolder = SendFolder.DOWNLOAD) {
     /** Bytes free on the TV's shared storage, or null when `df` can't be read. */
     suspend fun freeBytes(): Long? = Parse.dfAvailableKb(tv.run(Commands.DF_SDCARD))?.let { it * 1024 }
 
     /** Names already in the folder (creating it if needed), so new files never overwrite. */
     suspend fun takenNames(): Set<String> =
-        tv.run(Commands.LIST_SEND_DIR).lines().map { it.trim() }.filter { it.isNotEmpty() && it != "ok" }.toSet()
+        tv.run(Commands.listSendDir(folder.path)).lines().map { it.trim() }.filter { it.isNotEmpty() && it != "ok" }.toSet()
 
     suspend fun send(
         name: String,
@@ -32,7 +47,7 @@ class FileSender(private val tv: TvShell) {
         if (free != null && size > free - RESERVE_BYTES) SendResult.NoSpace(free)
         else {
             val safe = SafeName.unique(SafeName.clean(name), taken)
-            val path = "${Commands.SEND_DIR}/$safe"
+            val path = "${folder.path}/$safe"
             open().use { tv.pushStream(it, size, path, onProgress) }
             taken += safe
             SendResult.Sent(path)

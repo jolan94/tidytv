@@ -56,6 +56,7 @@ fun SendFilesScreen(
     onCancel: (Int) -> Unit,
     onRetry: (Int) -> Unit,
     onBack: () -> Unit,
+    onFolder: (dev.tidytv.core.ops.SendFolder) -> Unit = {},
 ) {
     val resolver = LocalContext.current.contentResolver
     val picker = rememberLauncherForActivityResult(ActivityResultContracts.OpenMultipleDocuments()) { uris: List<Uri> ->
@@ -93,13 +94,14 @@ fun SendFilesScreen(
                     FileKind(Icons.Rounded.MusicNote, "Music", Tidy.Orange)
                     FileKind(Icons.Rounded.Description, "Docs", Tidy.Green)
                 }
-                Body("Saved in Downloads › TidyTV", align = TextAlign.Center)
+                Body("Saved in ${s.folder.title} › TidyTV", align = TextAlign.Center)
             }
         }
+        FolderChoice(s.folder, enabled = !s.busy, onFolder)
         s.freeBytes?.let { InfoChip(Icons.Rounded.SdStorage, "${formatBytes(it)} free on the TV", color = Tidy.Grey, textColor = Tidy.Ink) }
         s.items.forEach { SendRow(it, onCancel, onRetry) }
         if (s.items.isNotEmpty() && s.items.all { it.status == SendStatus.SENT }) {
-            SafetyBanner("Sent. On the TV, open Downloads › TidyTV.")
+            SafetyBanner("Sent. On the TV, open ${s.folder.title} › TidyTV.")
         }
     }
 }
@@ -152,5 +154,22 @@ private fun formatBytes(b: Long): String {
         b >= gb -> String.format(Locale.US, "%.1f GB", b / gb)
         b >= mb -> String.format(Locale.US, "%.1f MB", b / mb)
         else -> String.format(Locale.US, "%d KB", maxOf(1L, Math.round(b / kb)))
+    }
+}
+
+/** Where on the TV the files go. Movies, Music and Pictures are where the TV's own players look first. */
+@OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
+@Composable
+private fun FolderChoice(current: dev.tidytv.core.ops.SendFolder, enabled: Boolean, onFolder: (dev.tidytv.core.ops.SendFolder) -> Unit) {
+    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        Text("Save in", style = MaterialTheme.typography.labelMedium, color = Tidy.Muted)
+        androidx.compose.foundation.layout.FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            for (f in dev.tidytv.core.ops.SendFolder.entries) {
+                androidx.compose.material3.FilterChip(
+                    selected = f == current, onClick = { onFolder(f) }, enabled = enabled,
+                    label = { Text(f.title, style = MaterialTheme.typography.labelLarge) },
+                )
+            }
+        }
     }
 }

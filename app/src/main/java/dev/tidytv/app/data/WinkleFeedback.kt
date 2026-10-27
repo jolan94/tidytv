@@ -86,7 +86,7 @@ class WinkleFeedback(
             append(d.message.trim())
             // The log goes in the message: the endpoint has no field for it, and it is what
             // turns "it didn't work on my TV" into a test fixture.
-            d.log?.takeIf { it.isNotBlank() }?.let { append("\n\n--- TidyTV log ---\n").append(it.takeLast(MAX_LOG)) }
+            d.log?.takeIf { it.isNotBlank() }?.let { append("\n\n--- TidyTV log ---\n").append(LogTrim.fit(it, MAX_LOG)) }
         })
         put("page", d.page)
         put("platform", "android")
@@ -118,7 +118,8 @@ class WinkleFeedback(
 
         /** Must match TidyTV's `name` in winkle-hq/config/apps.json. */
         const val APP_NAME = "TidyTV"
-        private const val MAX_LOG = 20_000
+        /** The feedback sheet keeps only the first 5,000 characters of a message, so the log is fitted to that (see LogTrim). */
+        private const val MAX_LOG = 4_800
 
         /** Decodes a picked image and re-encodes it as a JPEG of at most 1280 px, quality 70. */
         fun shrinkScreenshot(bytes: ByteArray): ByteArray? = runCatching {

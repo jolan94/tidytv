@@ -1,0 +1,7 @@
+What's new in 0.10.0
+• Connecting works better on slow TVs, with a clear retry.
+• Clearer help when Wi-Fi blocks the home screen change.
+• Lists for 335 TV models (was 252). TVs without a list can still pick apps by hand.
+• Storage and memory shown on My TV.
+• Choose where sent files go on the TV.
+• USB and file browser helpers are always kept.

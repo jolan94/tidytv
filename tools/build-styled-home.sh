@@ -7,7 +7,11 @@ cd "$(dirname "$0")/.."
 SDK="${ANDROID_HOME:-$HOME/Library/Android/sdk}"
 BT="$(ls -d "$SDK"/build-tools/* | sort -V | tail -1)"
 WORK="$(mktemp -d)"
-cp -R upstream/cleanyourtv/launcher/. "$WORK/"
+# The lists follow the submodule's newest commit, but the launcher is built from a released tag: LAUNCHER_REF=v3.0.0.
+REF="${LAUNCHER_REF:-v3.0.0}"
+git -C upstream/cleanyourtv archive "$REF" launcher | tar -x -C "$WORK"
+mv "$WORK/launcher/"* "$WORK/launcher/".[!.]* "$WORK/" 2>/dev/null || true
+rmdir "$WORK/launcher" 2>/dev/null || true
 echo "sdk.dir=$SDK" > "$WORK/local.properties"
 (cd "$WORK" && ./gradlew -q assembleRelease --console=plain)
 APK="$WORK/app/build/outputs/apk/release/app-release.apk"

@@ -68,7 +68,7 @@ Projectivy Launcher is a third home screen choice. TidyTV opens its page in the 
 | 🧷 **Backup first, every time** | Apps, settings and home screen are saved before any change. It can't be skipped. |
 | 🔕 **Turned off, never deleted** | Uses Android's own `pm disable-user`. Nothing is uninstalled. |
 | 🛡️ **Protected apps stay on** | Play Store, Play Services, keyboards, TV inputs, the remote, Bluetooth, Settings and setup apps are never touched, checked again before every command. |
-| 📺 **Tested lists for 252 models** | From [cleanyourtv](https://github.com/Gathin23/cleanyourtv), each tried on a real TV. [See yours →](https://tidytv.winkle.dev/tv/) |
+| 📺 **Tested lists for 335 models** | From [cleanyourtv](https://github.com/Gathin23/cleanyourtv), each tried on a real TV. [See yours →](https://tidytv.winkle.dev/tv/) |
 | ↩️ **Undo survives anything** | Every change is logged on the TV and the phone *before* it happens, so Restore works even after a Wi-Fi drop or a lost phone. If the TV gets stuck after a change, "TV stuck after a change?" on the first screen keeps trying for up to 10 minutes and turns everything back on as soon as the TV answers. |
 
 ## Works with

@@ -94,6 +94,8 @@ data class ReviewState(
     val confirmPermanent: List<String> = emptyList(),
     /** This TV's own model name, to compare with [listTitle] when the list is for a similar model. */
     val yourTv: String? = null,
+    /** Model, brand and Android version (never the serial or address), to send us when no list matches. */
+    val tvDetails: String = "",
 ) {
     /** Few apps from this TV's own list: say so and offer the others instead of looking finished. */
     val fewFound get() = !noList && candidates.size < FEW && extra.isEmpty() && moreAvailable.isNotEmpty()
@@ -120,6 +122,11 @@ data class SpaceState(
     val estimated: Boolean = true,
     val message: RestoreUi.Finished? = null,
 )
+
+/** What the My TV hub shows under the TV's name: free storage and free memory, read when the hub opens. */
+data class HubFacts(val freeStorageMb: Int? = null, val freeRamMb: Int? = null) {
+    val any get() = freeStorageMb != null || freeRamMb != null
+}
 
 /** The Apps tile: every app on the TV, with one-tap turn off or uninstall on a single app. */
 data class AppsState(
@@ -269,7 +276,11 @@ enum class SendStatus { WAITING, SENDING, SENT, NO_SPACE, FAILED, CANCELLED }
 
 data class SendItem(val id: Int, val name: String, val size: Long, val sent: Long = 0, val status: SendStatus = SendStatus.WAITING, val savedAs: String? = null)
 
-data class FilesState(val items: List<SendItem> = emptyList(), val freeBytes: Long? = null) {
+data class FilesState(
+    val items: List<SendItem> = emptyList(),
+    val freeBytes: Long? = null,
+    val folder: dev.tidytv.core.ops.SendFolder = dev.tidytv.core.ops.SendFolder.DOWNLOAD,
+) {
     val busy get() = items.any { it.status == SendStatus.SENDING || it.status == SendStatus.WAITING }
 }
 
@@ -297,6 +308,7 @@ data class UiState(
     val space: SpaceState = SpaceState(),
     val ads: AdsState = AdsState(),
     val apps: AppsState = AppsState(),
+    val hubFacts: HubFacts = HubFacts(),
     val rescue: RescueState = RescueState(),
     /** The real app icons read from the TV, as PNG files on the phone, by package. */
     val icons: Map<String, String> = emptyMap(),
@@ -503,12 +515,29 @@ class WizardViewModel(
         backend = b
         shell = s
         found = tv
-        val snap = try {
-            tvLock.withLock { TvReader.snapshot(s) }
-        } catch (e: Exception) {
-            if (e is kotlinx.coroutines.CancellationException) throw e
-            trace.line("snapshot failed: $e")
-            _ui.update { it.copy(problem = "Connected, but the TV didn't answer the way TidyTV expected. Tap Share logs so we can fix it.") }
+        // Right after "Allow" some TVs answer very slowly or drop the link once. A watchdog closes a link that says
+        // nothing for 25 s (a blocked read can't be cancelled any other way), then it is reconnected and tried again.
+        var current = s
+        var snap: TvSnapshot? = null
+        for (attempt in 1..3) {
+            val watchdog = viewModelScope.launch { delay(SNAPSHOT_PATIENCE_MS); trace.line("no answer in ${SNAPSHOT_PATIENCE_MS / 1000} s, closing the link"); b.close(current) }
+            snap = try {
+                tvLock.withLock { TvReader.snapshot(current) }
+            } catch (e: Exception) {
+                if (e is kotlinx.coroutines.CancellationException) throw e
+                trace.line("snapshot try $attempt failed: $e")
+                null
+            } finally {
+                watchdog.cancel()
+            }
+            if (snap != null || attempt == 3) break
+            delay(2_000)
+            b.close(current)
+            val link = b.connect(tv) {}
+            if (link.attempt == Attempt.CONNECTED && link.shell != null) { current = link.shell; shell = current } else trace.line("reconnect for the snapshot: ${link.attempt}")
+        }
+        if (snap == null) {
+            _ui.update { it.copy(problem = "Your TV connected but is slow to answer, so TidyTV couldn't read it. Keep the TV on and awake, then tap Connect again. If it keeps happening, tap Share logs.") }
             return
         }
         snapshot = snap
@@ -575,6 +604,15 @@ class WizardViewModel(
     // ---------- My TV hub ----------
 
     private fun enterHub() {
+        viewModelScope.launch {
+            // Two quick reads; anything the TV doesn't answer is simply not shown.
+            val facts = withShell { s ->
+                val freeKb = runCatching { dev.tidytv.core.ops.Parse.dfAvailableKb(s.run(dev.tidytv.core.ops.Commands.DF_DATA)) }.getOrNull()
+                val ramKb = runCatching { dev.tidytv.core.ops.Parse.memAvailableKb(s.run(dev.tidytv.core.ops.Commands.MEMINFO)) }.getOrNull()
+                HubFacts(freeKb?.let { (it / 1024).toInt() }, ramKb?.let { (it / 1024).toInt() })
+            }
+            if (facts != null) _ui.update { it.copy(hubFacts = facts) }
+        }
         _ui.update { it.copy(done = it.done.copy(records = log?.records().orEmpty()), remote = RemoteState(apps = it.remote.apps, pinned = it.remote.pinned)) }
         _ui.update { it.copy(savedTvs = runCatching { store.knownTvs() }.getOrDefault(it.savedTvs).sortedByDescending { t -> t.lastSeen }) }
     }
@@ -821,6 +859,8 @@ class WizardViewModel(
 
     private fun enterFiles() {
         if (_ui.value.files.busy) return
+        val saved = _ui.value.tv?.serial?.let { runCatching { store.sendFolder(it) }.getOrNull() }
+        _ui.update { it.copy(files = it.files.copy(folder = dev.tidytv.core.ops.SendFolder.of(saved))) }
         viewModelScope.launch {
             val s = shell ?: return@launch
             val free = runCatching { tvLock.withLock { dev.tidytv.core.ops.FileSender(s).freeBytes() } }.getOrNull()
@@ -828,7 +868,14 @@ class WizardViewModel(
         }
     }
 
-    /** Queues picked files and sends them one at a time into Downloads › TidyTV on the TV. */
+    /** Where files go on the TV. Not while a send is running; remembered for this TV. */
+    fun setSendFolder(folder: dev.tidytv.core.ops.SendFolder) {
+        if (_ui.value.files.busy) return
+        _ui.update { it.copy(files = it.files.copy(folder = folder)) }
+        _ui.value.tv?.serial?.let { runCatching { store.saveSendFolder(it, folder.name) } }
+    }
+
+    /** Queues picked files and sends them one at a time into the chosen folder's TidyTV folder on the TV. */
     fun sendFiles(picked: List<PickedFile>) {
         if (picked.isEmpty()) return
         val items = picked.map { p -> SendItem(nextFileId++, p.name, p.size) }
@@ -853,7 +900,7 @@ class WizardViewModel(
                 val s = shell ?: if (reconnect()) shell else null
                 if (s == null) break
                 result = tvLock.withLock {
-                    val sender = dev.tidytv.core.ops.FileSender(s)
+                    val sender = dev.tidytv.core.ops.FileSender(s, _ui.value.files.folder)
                     val taken = runCatching { sender.takenNames() }.getOrDefault(emptySet()).toMutableSet()
                     sender.send(p.name, p.size, p.open, taken) { sent -> setItem(id) { it.copy(sent = sent) } }
                 }
@@ -915,7 +962,15 @@ class WizardViewModel(
             list = match?.list
             if (match == null) {
                 trace.line("no list for ${snap.info.displayName}")
-                _ui.update { it.copy(review = it.review.copy(backup = BackupStatus.Saved, noList = true)) }
+                // No list for this TV: offer what other TVs' lists turn off (all unticked, protections kept) and let the
+                // owner tell us the model so a list can be added.
+                val info = snap.info
+                val details = "My TV isn't on a list yet.\nModel: ${info.model}\nBrand: ${info.brand}\nDevice: ${info.device}\nAndroid: ${info.release} (SDK ${info.sdk})\n"
+                val more = Grouping.moreCandidates(lists().lists, snap.installed - snap.disabled, snap.liveProtected, emptySet(), emptySet())
+                trace.line("no list: ${more.size} apps from other lists offered")
+                fetchIcons(more.map { c -> c.pkg })
+                _ui.update { it.copy(labels = it.labels + more.associate { c -> c.pkg to c.label },
+                    review = it.review.copy(backup = BackupStatus.Saved, noList = true, extra = more, tvDetails = details)) }
                 return@launch
             }
             trace.line("list ${match.list.id} score ${match.score} overlap ${match.overlap}")
@@ -1407,6 +1462,7 @@ class WizardViewModel(
     private var lastDock: List<String> = emptyList()
 
     private companion object {
+        const val SNAPSHOT_PATIENCE_MS = 25_000L
         /** A photo look: the photo full screen, with the frosted dock so the apps stay readable. */
         const val PHOTO_CONFIG = "{\"wallpaper\": true, \"background_color\": \"#000000\", \"dock_glass\": true}"
     }
@@ -1425,7 +1481,7 @@ class WizardViewModel(
     }
 
     private fun setupAppMessage(c: WraithCheck): String = when (c) {
-        WraithCheck.OwnsWifi -> "Your TV's saved Wi-Fi belongs to Google TV's setup app, so turning that app off would drop the TV off Wi-Fi. Your old home screen stays. If your TV uses a network cable instead, tick the box below and try again."
+        WraithCheck.OwnsWifi -> "Your TV's Wi-Fi was saved by Google TV's setup app, so TidyTV can't turn that app off without disconnecting the TV. Your old home screen stays. To fix it, on the TV open Settings > Network, choose your Wi-Fi, select Forget, then join it again with your password. Then tap Try again. (If your TV uses a network cable instead of Wi-Fi, tick the box below.)"
         WraithCheck.SetupIncomplete -> "Your TV hasn't finished its first setup, so Google TV's setup app has to stay on. Your old home screen stays."
         WraithCheck.Persistent -> "Google TV's setup app can't be turned off on this TV, so the Home button would keep going to it. Your old home screen stays."
         is WraithCheck.Unknown -> "TidyTV couldn't check Google TV's setup app safely (${c.why}), so it changed nothing. Your old home screen stays."
@@ -1604,6 +1660,10 @@ class WizardViewModel(
             appendLine("TidyTV $appVersion on Android ${android.os.Build.VERSION.RELEASE} (SDK ${android.os.Build.VERSION.SDK_INT})")
             if (tv != null) appendLine("TV: ${tv.model}, Android ${tv.release} (SDK ${tv.sdk}), list: ${list?.id ?: "none"}")
             appendLine("step: ${_ui.value.wizard.step}, connect: ${_ui.value.connect::class.simpleName}")
+            _ui.value.problem?.let { appendLine("problem: $it") }
+            (_ui.value.home as? HomeState.Problem)?.let { appendLine("home problem: ${it.message}") }
+            val r = _ui.value.review
+            if (r.backup != BackupStatus.Running) appendLine("review: list ${r.listTitle ?: "none"}, exact ${r.exact}, candidates ${r.candidates.size}, picked ${r.selected.size}")
         }
         val extra = linkedMapOf<String, String>()
         log?.records()?.let { r -> extra["actions"] = r.joinToString("\n") { "${it.ts} ${it.op} ${it.phase} ${it.target} ${it.detail.orEmpty()}" } }

@@ -174,6 +174,10 @@ class ScreenshotTest {
         dev.tidytv.app.data.KnownTv("B2", "Bedroom", "Chromecast with Google TV", "192.168.1.57", 1))))
     @Test fun hub() = shoot("7_hub", Step.HUB, UiState(tv = summary, wizard = dev.tidytv.core.flow.Wizard(Step.HUB, TvKind.ANDROID_TV),
         done = DoneState(records = records)))
+    @Test fun hubWithFacts() = shoot("7c_hub_facts", Step.HUB, UiState(tv = summary, wizard = dev.tidytv.core.flow.Wizard(Step.HUB, TvKind.ANDROID_TV),
+        done = DoneState(records = records), hubFacts = HubFacts(2_150, 1_180)))
+    @Test fun reviewNoListWithOtherTvsApps() = shoot("4f_review_no_list", Step.REVIEW, UiState(tv = summary, wizard = clean, labels = allLabels, review = ReviewState(
+        BackupStatus.Saved, noList = true, extra = candidates.take(6), tvDetails = "My TV isn't on a list yet.")))
     @Test fun hubFireTv() = shoot("7b_hub_fire_tv", Step.HUB, UiState(tv = summary, wizard = dev.tidytv.core.flow.Wizard(Step.HUB, TvKind.FIRE_TV)))
     @Test fun remote() = shoot("8_remote", Step.REMOTE, UiState(tv = summary, remote = RemoteState(apps = listOf(
         RemoteApp("com.netflix.ninja", "com.netflix.ninja/.MainActivity", "Netflix"),

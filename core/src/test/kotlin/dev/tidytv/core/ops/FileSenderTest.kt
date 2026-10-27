@@ -30,6 +30,27 @@ class FileSenderTest {
         assertEquals(SendResult.Sent("/sdcard/Download/TidyTV/a (2).mp4"), out)
     }
 
+    @Test fun theOwnerCanChooseTheFolderAndEachFolderKeepsItsOwnNames() = runTest {
+        val tv = FakeTv.googleTv()
+        val movies = FileSender(tv, SendFolder.MOVIES)
+        assertEquals(SendResult.Sent("/sdcard/Movies/TidyTV/film.mp4"), movies.send("film.mp4", 10, { bytes(10).inputStream() }, movies.takenNames().toMutableSet()))
+        assertTrue(tv.pushed.containsKey("/sdcard/Movies/TidyTV/film.mp4"))
+        // The same name in another folder is not a clash.
+        val docs = FileSender(tv, SendFolder.DOCUMENTS)
+        assertEquals(emptySet<String>(), docs.takenNames())
+        assertEquals(SendResult.Sent("/sdcard/Documents/TidyTV/film.mp4"), docs.send("film.mp4", 10, { bytes(10).inputStream() }, mutableSetOf()))
+        assertEquals(SendFolder.DOWNLOAD, SendFolder.of("nonsense"))
+        assertEquals(SendFolder.PICTURES, SendFolder.of("PICTURES"))
+    }
+
+    @Test fun onlyKnownFolderPathsReachTheShell() {
+        for (f in SendFolder.entries) Commands.listSendDir(f.path)
+        for (bad in listOf("/sdcard/../x/TidyTV", "/sdcard/Movies;rm -rf /", "/sdcard/Movies/TidyTV/../..")) {
+            val threw = runCatching { Commands.listSendDir(bad) }.isFailure
+            assertTrue("$bad should be refused", threw)
+        }
+    }
+
     @Test fun unsafeNamesAreCleaned() = runTest {
         val tv = FakeTv.googleTv()
         val out = FileSender(tv).send("../../etc/'evil'.apk", 3, { bytes(3).inputStream() }, mutableSetOf()) as SendResult.Sent
