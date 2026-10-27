@@ -74,12 +74,6 @@ object Wallpaper {
 /** The looks bundled from cleanyourtv's themes/ (see the copyThemes task): config.json plus wallpapers. */
 object Looks {
     fun load(assets: android.content.res.AssetManager, id: String): dev.tidytv.core.ops.LookFiles? = runCatching {
-        // TidyTV Home wallpapers: one picture, no theme files (assets/wallpapers/<name>.jpg).
-        if (id.startsWith("wall-")) {
-            val name = id.removePrefix("wall-")
-            if (!Regex("[a-z-]{1,24}").matches(name)) return null
-            return dev.tidytv.core.ops.LookFiles(id, "{}", wallpaper = assets.open("wallpapers/$name.jpg").use { it.readBytes() })
-        }
         val dir = "themes/$id"
         fun read(name: String) = runCatching { assets.open("$dir/$name").use { it.readBytes() } }.getOrNull()
         val config = read("config.json")?.decodeToString() ?: return null

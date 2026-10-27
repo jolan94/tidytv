@@ -94,7 +94,7 @@ object Protected {
         reason(pkg, live, listKeep) != null
 }
 
-/** A home screen TidyTV can install. The bundled ones are MIT or ours and bundled in the app's assets. */
+/** A home screen TidyTV can install. Both are MIT and bundled in the app's assets. */
 enum class HomeApp(
     val pkg: String,
     val activity: String,
@@ -104,12 +104,7 @@ enum class HomeApp(
     /** How the chosen dock apps reach it: start-intent extras, or a config.json it reads at start. */
     val dockByConfig: Boolean,
 ) {
-    /**
-     * TidyTV Home (ours, in launcher/): your wallpaper, a big clock and one bar with your apps and HDMI inputs. Under 1 MB, apps
-     * picked from the phone and edited on the TV. Reads config.json and wallpaper.jpg like the Apple-style one. The default.
-     */
-    TIDY("com.appfactory.tidytv.home", ".MainActivity", 21, "tidytv-home.apk", dockByConfig = true),
-    /** tv-detox (Ansub): one calm screen, 37 KB, apps editable on the TV with the remote. */
+    /** tv-detox (Ansub): one calm screen, 37 KB, apps editable on the TV with the remote. The default. */
     SIMPLE("com.ansub.tvhome", ".MainActivity", 21, "tvhome.apk", dockByConfig = false),
     /** cleanyourtv (Gathin): Apple TV style dock with a glass highlight and an inputs menu. Android 8+. */
     STYLED("com.gathin.tvhome", ".MainActivity", 26, "cleanyourtv-home.apk", dockByConfig = true),
@@ -124,9 +119,6 @@ enum class HomeApp(
 
     /** Installed from the TV's own Play Store rather than pushed by TidyTV. */
     val fromPlayStore: Boolean get() = asset == null
-
-    /** Looks (wallpaper, theme files) can be changed from the phone for these. */
-    val hasLooks: Boolean get() = this == STYLED || this == TIDY
 
     companion object {
         fun of(pkg: String?): HomeApp? = entries.firstOrNull { it.pkg == pkg }

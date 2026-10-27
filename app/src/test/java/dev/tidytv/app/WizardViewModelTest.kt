@@ -64,11 +64,8 @@ class WizardViewModelTest {
     private val glassLook = dev.tidytv.core.ops.LookFiles("glass", """{"dock_apps": ["com.sample.app"], "wallpaper": true, "dock_glass": true}""", wallpaper = byteArrayOf(7, 7))
     private val photo = dev.tidytv.app.data.WallpaperImage(ByteArray(310_000), 1920, 1080, originalBytes = 4_200_000)
 
-    /** TidyTV Home is the default when its APK is bundled; most tests here predate it and use Simple. */
-    private var withTidyHome = false
-
     private fun vm(demo: DemoBackend, lists: ListCatalog = catalog) =
-        WizardViewModel(Store(dir), Trace(File(dir, "logs")), { NoNetwork }, demo, { lists }, { home -> if (home == dev.tidytv.core.lists.HomeApp.TIDY && !withTidyHome) null else home.pkg.toByteArray() },
+        WizardViewModel(Store(dir), Trace(File(dir, "logs")), { NoNetwork }, demo, { lists }, { home -> home.pkg.toByteArray() },
             looks = { id -> if (id == "glass") glassLook else null }, photoWallpaper = { photo }, imageWork = dispatcher)
 
     /** Connects to the Demo TV, which lands on the My TV hub; [tidy] then opens Tidy up. */
@@ -202,7 +199,7 @@ class WizardViewModelTest {
         advanceUntilIdle()
         assertEquals(Step.HOME_SCREEN, vm.ui.value.wizard.step)
         val offer = vm.ui.value.home as HomeState.Offer
-        assertEquals(dev.tidytv.core.lists.HomeApp.entries - dev.tidytv.core.lists.HomeApp.TIDY, offer.available)
+        assertEquals(dev.tidytv.core.lists.HomeApp.entries, offer.available)
         assertEquals("the simple home screen is the default", dev.tidytv.core.lists.HomeApp.SIMPLE, offer.app)
 
         vm.chooseHome(dev.tidytv.core.lists.HomeApp.STYLED)
@@ -311,22 +308,6 @@ class WizardViewModelTest {
             assertTrue(!vm.ui.value.check.running)
             assertTrue(off.first() !in tv.disabled)
         }
-    }
-
-    @Test fun tidyTvHomeIsOfferedFirstAndInstalledWithTheDock() = runTest(dispatcher) {
-        withTidyHome = true
-        val demo = DemoBackend()
-        val tv: FakeTv = demo.tv.also { it.installAs = dev.tidytv.core.lists.HomeApp.TIDY }
-        val vm = vm(demo)
-        vm.choose(TvKind.ANDROID_TV)
-        connectToDemo(vm, tidy = false)
-        vm.openHomeScreen(); advanceUntilIdle()
-        val offer = vm.ui.value.home as HomeState.Offer
-        assertEquals(dev.tidytv.core.lists.HomeApp.TIDY, offer.app)
-        assertEquals(dev.tidytv.core.lists.HomeApp.TIDY, offer.available.first())
-        vm.installHome(); advanceUntilIdle()
-        assertTrue(vm.ui.value.home is HomeState.Installed)
-        assertTrue(dev.tidytv.core.lists.HomeApp.TIDY.pkg in tv.installed)
     }
 
     @Test fun oneAppCanBeTurnedBackOnByItself() = runTest(dispatcher) {

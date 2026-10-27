@@ -122,7 +122,6 @@ fun HomeScreenStep(
     onCloseLook: () -> Unit = {},
     onApplyLook: (dev.tidytv.app.LookId) -> Unit = {},
     onApplyPhoto: (dev.tidytv.app.PickedFile) -> Unit = {},
-    onApplyWallpaper: (dev.tidytv.app.WallId) -> Unit = {},
 ) {
     when (s) {
         is HomeState.Offer -> if (s.untested) ScreenFrame(bottom = { BigButton("OK", onSkip) }) {
@@ -134,7 +133,7 @@ fun HomeScreenStep(
         }) {
             if (disabledCount > 0) InfoChip(Icons.Rounded.CheckCircle, "$disabledCount apps turned off")
             if (s.styledIsHome) Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                Text("${s.lookApp.title} is on", style = MaterialTheme.typography.titleMedium, color = Tidy.Ink, modifier = Modifier.weight(1f))
+                Text("Apple TV style is on", style = MaterialTheme.typography.titleMedium, color = Tidy.Ink, modifier = Modifier.weight(1f))
                 TextLink("Change the look", onOpenLook, icon = Icons.Rounded.Palette)
             }
             Title("Want a cleaner home screen?")
@@ -172,9 +171,9 @@ fun HomeScreenStep(
             Bubble("Setting up your new home screen…") { Spinner(26.dp) }
             Body("About 30 seconds. Please don't press the remote.")
         }
-        is HomeState.Look -> LookScreen(s.look, onCloseLook, onApplyLook, onApplyPhoto, onApplyWallpaper)
+        is HomeState.Look -> LookScreen(s.look, onCloseLook, onApplyLook, onApplyPhoto)
         is HomeState.Installed -> ScreenFrame(bottom = {
-            if (s.app.hasLooks) BigButton(if (s.app == HomeApp.TIDY) "Pick a wallpaper" else "Pick a look", onOpenLook, color = Tidy.BlueSoft, textColor = Tidy.Ink)
+            if (s.app == HomeApp.STYLED) BigButton("Pick a look", onOpenLook, color = Tidy.BlueSoft, textColor = Tidy.Ink)
             BigButton("Continue", onContinue)
         }) {
             HeroMascot(mood = Mood.HAPPY)
@@ -212,7 +211,6 @@ fun HomeScreenStep(
 
 /** How each home screen is named and described in the app. */
 val HomeApp.title: String get() = when (this) {
-    HomeApp.TIDY -> "TidyTV Home"
     HomeApp.SIMPLE -> "Simple"
     HomeApp.STYLED -> "Apple TV style"
     HomeApp.PROJECTIVY -> "Projectivy"
@@ -220,35 +218,30 @@ val HomeApp.title: String get() = when (this) {
 
 /** One line on what it's like, for its card. */
 private val HomeApp.benefit: String get() = when (this) {
-    HomeApp.TIDY -> "Your wallpaper and your apps"
     HomeApp.SIMPLE -> "Calm, just your apps"
     HomeApp.STYLED -> "A dock and a big clock"
     HomeApp.PROJECTIVY -> "Rows you arrange yourself"
 }
 
 private val HomeApp.tag: String? get() = when (this) {
-    HomeApp.TIDY -> "Recommended"
-    HomeApp.SIMPLE -> null
+    HomeApp.SIMPLE -> "Recommended"
     HomeApp.PROJECTIVY -> "Popular"
     HomeApp.STYLED -> null
 }
 
 private val HomeApp.blurb: String get() = when (this) {
-    HomeApp.TIDY -> "Your wallpaper, a big clock and one bar with your apps and HDMI inputs. Small and fast, made for TidyTV. Pick the apps here, then move or remove them on the TV with the remote."
     HomeApp.SIMPLE -> "One calm screen with your apps, your HDMI inputs and a clock. Tiny (37 KB). Move apps around on the TV with the remote."
     HomeApp.STYLED -> "A dock of your favourite apps with a glass highlight, a big clock and an inputs menu. About 480 KB, Android 8 or newer."
     HomeApp.PROJECTIVY -> "A popular free launcher with rows you arrange yourself. Installed from the Play Store on your TV, so you always get the latest version."
 }
 
 private val HomeApp.preview: Int? get() = when (this) {
-    HomeApp.TIDY -> dev.tidytv.app.R.drawable.home_tidy
     HomeApp.SIMPLE -> dev.tidytv.app.R.drawable.home_simple
     HomeApp.STYLED -> dev.tidytv.app.R.drawable.home_styled
     HomeApp.PROJECTIVY -> null
 }
 
 val HomeApp.tip: String get() = when (this) {
-    HomeApp.TIDY -> "Press Home on your remote to see it. Hold OK on an app to move or remove it, and pick Add app for more."
     HomeApp.SIMPLE -> "Press Home on your remote to see it. Hold OK on an app to move or replace it."
     HomeApp.STYLED -> "Press Home on your remote to see it. Your chosen apps sit in the dock at the bottom."
     HomeApp.PROJECTIVY -> "Press Home on your remote to see it. Change its look in Projectivy's own settings."

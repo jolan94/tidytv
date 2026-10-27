@@ -150,7 +150,7 @@ class LauncherHandover(
         // tv-detox takes them as start extras below.
         if (app.dockByConfig) {
             // Through the launcher's own provider (LauncherLook): a file the shell creates can't be read on Android 14.
-            if (dockApps.isNotEmpty()) LauncherLook(tv, app.pkg, clock).writeDock(dockApps)
+            if (dockApps.isNotEmpty()) LauncherLook(tv, clock).writeDock(dockApps)
             tv.run(Commands.grantLocation(ourPkg)) // shows the Wi-Fi name; harmless if refused
         }
 

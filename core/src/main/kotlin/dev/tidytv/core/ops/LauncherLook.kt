@@ -32,18 +32,15 @@ class LookFiles(
 }
 
 /**
- * Puts a look on the Apple TV style home screen or on TidyTV Home (the same files), the way upstream tools/theme.sh does: every file is
+ * Puts a look on the Apple TV style home screen, the way upstream tools/theme.sh does: every file is
  * staged in /data/local/tmp, then written through the launcher's ThemeProvider so the launcher owns
  * it (on Android 14 a file the shell creates in Android/data can't be read by the app), with cp as
  * the fallback for launchers or Android versions without `content write`. The owner's dock is kept.
  * Nothing here changes which apps are on or off, so it isn't logged for Restore; uninstalling the
  * home screen removes its files.
  */
-class LauncherLook(
-    private val tv: TvShell,
-    private val pkg: String = HomeApp.STYLED.pkg,
-    private val clock: () -> Long = System::currentTimeMillis,
-) {
+class LauncherLook(private val tv: TvShell, private val clock: () -> Long = System::currentTimeMillis) {
+    private val pkg = HomeApp.STYLED.pkg
 
     /** True when the look is on the TV and Home was restarted with it. */
     suspend fun apply(look: LookFiles): Boolean {
