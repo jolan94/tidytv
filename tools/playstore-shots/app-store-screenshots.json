@@ -1,0 +1,886 @@
+{
+  "schemaVersion": 3,
+  "appName": "TidyTV",
+  "themeId": "tidytv",
+  "fontId": "template-default",
+  "connectedCanvas": true,
+  "locales": [
+    "en"
+  ],
+  "locale": "en",
+  "device": "android",
+  "orientation": "portrait",
+  "appIcon": "/app-icon.png",
+  "slidesByDevice": {
+    "iphone": [
+      {
+        "id": "s_mvj2mfit_0",
+        "layout": "hero",
+        "label": {
+          "en": "MEET YOUR APP"
+        },
+        "headline": {
+          "en": "Sell one\nidea per slide."
+        },
+        "screenshot": ""
+      },
+      {
+        "id": "s_mvj2mfit_1",
+        "layout": "device-bottom",
+        "label": {
+          "en": "FEATURE 01"
+        },
+        "headline": {
+          "en": "Your headline\nlives here."
+        },
+        "screenshot": ""
+      },
+      {
+        "id": "s_mvj2mfit_2",
+        "layout": "two-devices",
+        "label": {
+          "en": "FEATURE 02"
+        },
+        "headline": {
+          "en": "Show two\nscreens at once."
+        },
+        "screenshot": "",
+        "screenshotSecondary": ""
+      },
+      {
+        "id": "s_mvj2mfit_3",
+        "layout": "device-top",
+        "label": {
+          "en": "FEATURE 03"
+        },
+        "headline": {
+          "en": "Flip the contrast\nfor visual rhythm."
+        },
+        "screenshot": "",
+        "inverted": true
+      },
+      {
+        "id": "s_mvj2mfit_4",
+        "layout": "no-device",
+        "label": {
+          "en": "MORE"
+        },
+        "headline": {
+          "en": "And so\nmuch more."
+        },
+        "screenshot": ""
+      }
+    ],
+    "android": [
+      {
+        "id": "tidy_01",
+        "layout": "hero",
+        "label": {
+          "en": "FOR ANDROID & GOOGLE TV"
+        },
+        "headline": {
+          "en": "Tidy your TV\nin a minute."
+        },
+        "screenshot": "/screenshots/android/phone/{locale}/01.png",
+        "transforms": {
+          "caption": {
+            "x": 60,
+            "y": 110,
+            "width": 960,
+            "height": 420,
+            "zIndex": 4
+          },
+          "device": {
+            "x": 210,
+            "y": 580,
+            "width": 660,
+            "height": 1429.9999999999998,
+            "rotation": 0,
+            "zIndex": 3
+          }
+        },
+        "typography": {
+          "labelScale": 1.25,
+          "headlineScale": 1.2
+        },
+        "imageElements": [
+          {
+            "id": "m1",
+            "src": "/brand/mascot-happy.png",
+            "transform": {
+              "x": 820,
+              "y": 1640,
+              "width": 250,
+              "height": 250,
+              "rotation": 6,
+              "zIndex": 6
+            },
+            "fit": "contain"
+          }
+        ]
+      },
+      {
+        "id": "tidy_02",
+        "layout": "device-bottom",
+        "label": {
+          "en": "ONE TINY APP"
+        },
+        "headline": {
+          "en": "Four tools.\nZero clutter."
+        },
+        "screenshot": "/screenshots/android/phone/{locale}/02.png",
+        "inverted": true,
+        "transforms": {
+          "caption": {
+            "x": 60,
+            "y": 110,
+            "width": 960,
+            "height": 420,
+            "zIndex": 4
+          },
+          "device": {
+            "x": 210,
+            "y": 580,
+            "width": 660,
+            "height": 1429.9999999999998,
+            "rotation": 0,
+            "zIndex": 3
+          }
+        },
+        "typography": {
+          "labelScale": 1.25,
+          "headlineScale": 1.2
+        }
+      },
+      {
+        "id": "tidy_03",
+        "layout": "device-top",
+        "label": {
+          "en": "ADS & TRACKING"
+        },
+        "headline": {
+          "en": "Turn off ads.\nKeep your apps."
+        },
+        "screenshot": "/screenshots/android/phone/{locale}/03.png",
+        "transforms": {
+          "device": {
+            "x": 210,
+            "y": -210,
+            "width": 660,
+            "height": 1429.9999999999998,
+            "rotation": 0,
+            "zIndex": 3
+          },
+          "caption": {
+            "x": 60,
+            "y": 1290,
+            "width": 960,
+            "height": 460,
+            "zIndex": 4
+          }
+        },
+        "typography": {
+          "labelScale": 1.25,
+          "headlineScale": 1.2
+        }
+      },
+      {
+        "id": "tidy_04",
+        "layout": "device-bottom",
+        "label": {
+          "en": "HOME SCREEN"
+        },
+        "headline": {
+          "en": "A calm home\nscreen. No ads."
+        },
+        "screenshot": "/screenshots/android/phone/{locale}/04.png",
+        "inverted": true,
+        "transforms": {
+          "caption": {
+            "x": 60,
+            "y": 110,
+            "width": 960,
+            "height": 420,
+            "zIndex": 4
+          },
+          "device": {
+            "x": 210,
+            "y": 580,
+            "width": 660,
+            "height": 1429.9999999999998,
+            "rotation": 0,
+            "zIndex": 3
+          }
+        },
+        "typography": {
+          "labelScale": 1.25,
+          "headlineScale": 1.2
+        }
+      },
+      {
+        "id": "tidy_05",
+        "layout": "hero",
+        "label": {
+          "en": "PHONE REMOTE"
+        },
+        "headline": {
+          "en": "Lost the remote?\nUse your phone."
+        },
+        "screenshot": "/screenshots/android/phone/{locale}/05.png",
+        "transforms": {
+          "caption": {
+            "x": 60,
+            "y": 110,
+            "width": 960,
+            "height": 420,
+            "zIndex": 4
+          },
+          "device": {
+            "x": 210,
+            "y": 580,
+            "width": 660,
+            "height": 1429.9999999999998,
+            "rotation": 0,
+            "zIndex": 3
+          }
+        },
+        "typography": {
+          "labelScale": 1.25,
+          "headlineScale": 1.2
+        },
+        "imageElements": [
+          {
+            "id": "m5",
+            "src": "/brand/mascot-search.png",
+            "transform": {
+              "x": 5,
+              "y": 1640,
+              "width": 250,
+              "height": 250,
+              "rotation": -6,
+              "zIndex": 6
+            },
+            "fit": "contain"
+          }
+        ]
+      },
+      {
+        "id": "tidy_06",
+        "layout": "device-top",
+        "label": {
+          "en": "SEND FILES"
+        },
+        "headline": {
+          "en": "Send photos\nto your TV."
+        },
+        "screenshot": "/screenshots/android/phone/{locale}/06.png",
+        "inverted": true,
+        "transforms": {
+          "device": {
+            "x": 210,
+            "y": -210,
+            "width": 660,
+            "height": 1429.9999999999998,
+            "rotation": 0,
+            "zIndex": 3
+          },
+          "caption": {
+            "x": 60,
+            "y": 1290,
+            "width": 960,
+            "height": 460,
+            "zIndex": 4
+          }
+        },
+        "typography": {
+          "labelScale": 1.25,
+          "headlineScale": 1.2
+        }
+      },
+      {
+        "id": "tidy_07",
+        "layout": "device-bottom",
+        "label": {
+          "en": "BACKED UP FIRST"
+        },
+        "headline": {
+          "en": "Never deletes.\nUndo anytime."
+        },
+        "screenshot": "/screenshots/android/phone/{locale}/07.png",
+        "transforms": {
+          "caption": {
+            "x": 60,
+            "y": 110,
+            "width": 960,
+            "height": 420,
+            "zIndex": 4
+          },
+          "device": {
+            "x": 210,
+            "y": 580,
+            "width": 660,
+            "height": 1429.9999999999998,
+            "rotation": 0,
+            "zIndex": 3
+          }
+        },
+        "typography": {
+          "labelScale": 1.25,
+          "headlineScale": 1.2
+        },
+        "imageElements": [
+          {
+            "id": "m7",
+            "src": "/brand/mascot-cheer.png",
+            "transform": {
+              "x": 820,
+              "y": 1640,
+              "width": 250,
+              "height": 250,
+              "rotation": 6,
+              "zIndex": 6
+            },
+            "fit": "contain"
+          }
+        ]
+      }
+    ],
+    "ipad": [
+      {
+        "id": "s_mvj2mfit_a",
+        "layout": "hero",
+        "label": {
+          "en": "MEET YOUR APP"
+        },
+        "headline": {
+          "en": "Made for\nthe big screen."
+        },
+        "screenshot": ""
+      },
+      {
+        "id": "s_mvj2mfit_b",
+        "layout": "device-bottom",
+        "label": {
+          "en": "FEATURE 01"
+        },
+        "headline": {
+          "en": "Built for\nfocus."
+        },
+        "screenshot": ""
+      },
+      {
+        "id": "s_mvj2mfit_c",
+        "layout": "device-top",
+        "label": {
+          "en": "FEATURE 02"
+        },
+        "headline": {
+          "en": "Always within reach."
+        },
+        "screenshot": "",
+        "inverted": true
+      }
+    ],
+    "tvos": [
+      {
+        "id": "s_mvj2mfit_d",
+        "layout": "hero",
+        "label": {
+          "en": "MEET YOUR APP"
+        },
+        "headline": {
+          "en": "Made for\nthe living room."
+        },
+        "screenshot": ""
+      },
+      {
+        "id": "s_mvj2mfit_e",
+        "layout": "split-landscape",
+        "label": {
+          "en": "FEATURE 01"
+        },
+        "headline": {
+          "en": "One idea\nper screen."
+        },
+        "screenshot": ""
+      },
+      {
+        "id": "s_mvj2mfit_f",
+        "layout": "device-top",
+        "label": {
+          "en": "FEATURE 02"
+        },
+        "headline": {
+          "en": "Flip the contrast."
+        },
+        "screenshot": "",
+        "inverted": true
+      },
+      {
+        "id": "s_mvj2mfit_g",
+        "layout": "no-device",
+        "label": {
+          "en": "MORE"
+        },
+        "headline": {
+          "en": "And so\nmuch more."
+        },
+        "screenshot": ""
+      }
+    ],
+    "watchos": [
+      {
+        "id": "s_mvj2mfit_h",
+        "layout": "hero",
+        "label": {
+          "en": "MEET YOUR APP"
+        },
+        "headline": {
+          "en": "On your\nwrist."
+        },
+        "screenshot": ""
+      },
+      {
+        "id": "s_mvj2mfit_i",
+        "layout": "device-bottom",
+        "label": {
+          "en": "FEATURE 01"
+        },
+        "headline": {
+          "en": "One glance.\nDone."
+        },
+        "screenshot": ""
+      },
+      {
+        "id": "s_mvj2mfiu_j",
+        "layout": "device-top",
+        "label": {
+          "en": "FEATURE 02"
+        },
+        "headline": {
+          "en": "Always\nwith you."
+        },
+        "screenshot": "",
+        "inverted": true
+      }
+    ],
+    "carplay": [
+      {
+        "id": "s_mvj2mfiu_k",
+        "layout": "split-landscape",
+        "label": {
+          "en": "CARPLAY"
+        },
+        "headline": {
+          "en": "Eyes on\nthe road."
+        },
+        "screenshot": ""
+      },
+      {
+        "id": "s_mvj2mfiu_l",
+        "layout": "device-bottom",
+        "label": {
+          "en": "FEATURE 01"
+        },
+        "headline": {
+          "en": "Everything, one tap away."
+        },
+        "screenshot": ""
+      },
+      {
+        "id": "s_mvj2mfiu_m",
+        "layout": "device-top",
+        "label": {
+          "en": "FEATURE 02"
+        },
+        "headline": {
+          "en": "Made for every drive."
+        },
+        "screenshot": "",
+        "inverted": true
+      }
+    ],
+    "mac": [
+      {
+        "id": "s_mvj2mfiu_n",
+        "layout": "hero",
+        "label": {
+          "en": "MEET YOUR APP"
+        },
+        "headline": {
+          "en": "Made for\nyour Mac."
+        },
+        "screenshot": ""
+      },
+      {
+        "id": "s_mvj2mfiu_o",
+        "layout": "split-landscape",
+        "label": {
+          "en": "FEATURE 01"
+        },
+        "headline": {
+          "en": "Everything in\none window."
+        },
+        "screenshot": ""
+      },
+      {
+        "id": "s_mvj2mfiu_p",
+        "layout": "device-top",
+        "label": {
+          "en": "FEATURE 02"
+        },
+        "headline": {
+          "en": "One shortcut away."
+        },
+        "screenshot": "",
+        "inverted": true
+      },
+      {
+        "id": "s_mvj2mfiu_q",
+        "layout": "two-devices",
+        "label": {
+          "en": "FEATURE 03"
+        },
+        "headline": {
+          "en": "Work across windows."
+        },
+        "screenshot": "",
+        "screenshotSecondary": ""
+      },
+      {
+        "id": "s_mvj2mfiu_r",
+        "layout": "no-device",
+        "label": {
+          "en": "MORE"
+        },
+        "headline": {
+          "en": "And so\nmuch more."
+        },
+        "screenshot": ""
+      }
+    ],
+    "android-7": [
+      {
+        "id": "s_mvj2mfiu_s",
+        "layout": "hero",
+        "label": {
+          "en": "MEET YOUR APP"
+        },
+        "headline": {
+          "en": "Pocket-sized\npower."
+        },
+        "screenshot": ""
+      },
+      {
+        "id": "s_mvj2mfiu_t",
+        "layout": "split-landscape",
+        "label": {
+          "en": "FEATURE 01"
+        },
+        "headline": {
+          "en": "Wide canvas,\nbigger ideas."
+        },
+        "screenshot": ""
+      }
+    ],
+    "android-10": [
+      {
+        "id": "s_mvj2mfiu_u",
+        "layout": "hero",
+        "label": {
+          "en": "MEET YOUR APP"
+        },
+        "headline": {
+          "en": "Made for\nthe big screen."
+        },
+        "screenshot": ""
+      },
+      {
+        "id": "s_mvj2mfiu_v",
+        "layout": "split-landscape",
+        "label": {
+          "en": "FEATURE 01"
+        },
+        "headline": {
+          "en": "Wide canvas,\nbigger ideas."
+        },
+        "screenshot": ""
+      }
+    ],
+    "feature-graphic": [
+      {
+        "id": "tidy_fg",
+        "layout": "feature-graphic",
+        "label": {},
+        "headline": {
+          "en": "Tidy your TV.\nFrom your phone."
+        },
+        "screenshot": "/screenshots/android/phone/{locale}/02.png",
+        "imageElements": [
+          {
+            "id": "fgart",
+            "src": "/brand/phone-tv-link.png",
+            "transform": {
+              "x": 545,
+              "y": 0,
+              "width": 500,
+              "height": 500,
+              "rotation": 0,
+              "zIndex": 5
+            },
+            "fit": "contain"
+          }
+        ],
+        "typography": {
+          "headlineScale": 1.1,
+          "appNameScale": 1.1
+        }
+      }
+    ],
+    "duo-outer": [
+      {
+        "id": "s_mvj2mfiu_x",
+        "layout": "hero",
+        "label": {
+          "en": "MEET YOUR APP"
+        },
+        "headline": {
+          "en": "Everything,\none hand."
+        },
+        "screenshot": ""
+      },
+      {
+        "id": "s_mvj2mfiu_y",
+        "layout": "device-bottom",
+        "label": {
+          "en": "FEATURE 01"
+        },
+        "headline": {
+          "en": "One idea\nper screen."
+        },
+        "screenshot": ""
+      },
+      {
+        "id": "s_mvj2mfiu_z",
+        "layout": "two-devices",
+        "label": {
+          "en": "OPEN IT"
+        },
+        "headline": {
+          "en": "Open it for\nthe full view."
+        },
+        "screenshot": "",
+        "screenshotSecondary": ""
+      },
+      {
+        "id": "s_mvj2mfiu_10",
+        "layout": "device-top",
+        "label": {
+          "en": "FEATURE 02"
+        },
+        "headline": {
+          "en": "Flip the contrast."
+        },
+        "screenshot": "",
+        "inverted": true
+      },
+      {
+        "id": "s_mvj2mfiu_11",
+        "layout": "no-device",
+        "label": {
+          "en": "MORE"
+        },
+        "headline": {
+          "en": "And so\nmuch more."
+        },
+        "screenshot": ""
+      }
+    ],
+    "duo-outer-landscape": [
+      {
+        "id": "s_mvj2mfiu_12",
+        "layout": "hero",
+        "label": {
+          "en": "TURN IT"
+        },
+        "headline": {
+          "en": "Made for the wide view."
+        },
+        "screenshot": ""
+      },
+      {
+        "id": "s_mvj2mfiu_13",
+        "layout": "split-landscape",
+        "label": {
+          "en": "FEATURE 01"
+        },
+        "headline": {
+          "en": "One idea\nper screen."
+        },
+        "screenshot": ""
+      },
+      {
+        "id": "s_mvj2mfiu_14",
+        "layout": "device-top",
+        "label": {
+          "en": "FEATURE 02"
+        },
+        "headline": {
+          "en": "Flip the contrast."
+        },
+        "screenshot": "",
+        "inverted": true
+      }
+    ],
+    "duo-inner": [
+      {
+        "id": "s_mvj2mfiu_15",
+        "layout": "hero",
+        "label": {
+          "en": "UNFOLD IT"
+        },
+        "headline": {
+          "en": "Room for\nthe whole view."
+        },
+        "screenshot": ""
+      },
+      {
+        "id": "s_mvj2mfiu_16",
+        "layout": "device-bottom",
+        "label": {
+          "en": "FEATURE 01"
+        },
+        "headline": {
+          "en": "One idea\nper screen."
+        },
+        "screenshot": ""
+      },
+      {
+        "id": "s_mvj2mfiu_17",
+        "layout": "two-devices",
+        "label": {
+          "en": "FOLDED + OPEN"
+        },
+        "headline": {
+          "en": "Turn it, open it,\nkeep going."
+        },
+        "screenshot": "",
+        "screenshotSecondary": ""
+      },
+      {
+        "id": "s_mvj2mfiu_18",
+        "layout": "device-top",
+        "label": {
+          "en": "FEATURE 02"
+        },
+        "headline": {
+          "en": "Flip the contrast."
+        },
+        "screenshot": "",
+        "inverted": true
+      }
+    ],
+    "duo-inner-landscape": [
+      {
+        "id": "s_mvj2mfiu_19",
+        "layout": "hero",
+        "label": {
+          "en": "UNFOLD IT"
+        },
+        "headline": {
+          "en": "Lead with the two-pane view."
+        },
+        "screenshot": ""
+      },
+      {
+        "id": "s_mvj2mfiu_1a",
+        "layout": "two-devices",
+        "label": {
+          "en": "FOLDED + OPEN"
+        },
+        "headline": {
+          "en": "Same moment, closed and open."
+        },
+        "screenshot": "",
+        "screenshotSecondary": ""
+      },
+      {
+        "id": "s_mvj2mfiu_1b",
+        "layout": "split-landscape",
+        "label": {
+          "en": "FEATURE 02"
+        },
+        "headline": {
+          "en": "One idea\nper screen."
+        },
+        "screenshot": ""
+      },
+      {
+        "id": "s_mvj2mfiu_1c",
+        "layout": "device-top",
+        "label": {
+          "en": "FEATURE 03"
+        },
+        "headline": {
+          "en": "Show what only the wide screen can."
+        },
+        "screenshot": "",
+        "inverted": true
+      },
+      {
+        "id": "s_mvj2mfiu_1d",
+        "layout": "no-device",
+        "label": {
+          "en": "MORE"
+        },
+        "headline": {
+          "en": "And so much more."
+        },
+        "screenshot": ""
+      }
+    ],
+    "creative-universal": [
+      {
+        "id": "s_mvj2mfiu_1e",
+        "layout": "split-landscape",
+        "label": {
+          "en": "NEW"
+        },
+        "headline": {
+          "en": "Your app,\nat a glance."
+        },
+        "screenshot": ""
+      }
+    ],
+    "creative-header": [
+      {
+        "id": "s_mvj2mfiu_1f",
+        "layout": "split-landscape",
+        "label": {
+          "en": "NEW"
+        },
+        "headline": {
+          "en": "Your app,\nat a glance."
+        },
+        "screenshot": ""
+      }
+    ],
+    "creative-search": [
+      {
+        "id": "s_mvj2mfiu_1g",
+        "layout": "split-landscape",
+        "label": {
+          "en": "NEW"
+        },
+        "headline": {
+          "en": "Your app,\nat a glance."
+        },
+        "screenshot": ""
+      }
+    ]
+  },
+  "crossScreenMockupsByDevice": {
+    "android": [],
+    "feature-graphic": []
+  }
+}
