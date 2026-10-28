@@ -209,6 +209,7 @@ data class CheckState(
     val running: Boolean = false,
     val report: dev.tidytv.core.ops.CheckReport? = null,
     val retidying: Boolean = false,
+    val repairingHome: Boolean = false,
     val rebooting: String? = null,
     val message: RestoreUi.Finished? = null,
 )
@@ -713,6 +714,32 @@ class WizardViewModel(
             trace.line("check: $report")
             _ui.update { it.copy(check = it.check.copy(running = false, report = report,
                 message = if (report == null) RestoreUi.Finished("The TV stopped answering. Check it's on and on the same network.", ok = false) else it.check.message)) }
+        }
+    }
+
+    /**
+     * Some TVs (Haier and others) turn their own home screen back on at every restart, so Home goes back to Google's.
+     * This puts TidyTV's home screen back as Home with the same careful handover as the first time, then checks again.
+     */
+    fun repairHome() {
+        val app = _ui.value.check.report?.repairableHome ?: return
+        val apk = launcherApk(app) ?: return
+        val lg = log ?: return
+        val sdk = _ui.value.tv?.sdk ?: 0
+        if (_ui.value.check.repairingHome || _ui.value.check.running) return
+        _ui.update { it.copy(check = it.check.copy(repairingHome = true, message = null)) }
+        wizard(WizardEvent.Busy(true))
+        viewModelScope.launch {
+            val outcome = withShell { s -> LauncherHandover(s, lg, sleep = { _ -> delay(backend?.saveWaitMs ?: 0) }, app = app).run(apk, emptyList(), sdk) }
+            trace.line("repair home (${app.name}): $outcome")
+            val msg = when (outcome) {
+                is HandoverOutcome.Done -> RestoreUi.Finished("Your home screen is back. If it goes back again after a restart, open Check my TV and tap Put my home screen back.", ok = true)
+                null -> RestoreUi.Finished("The TV stopped answering. Check it's on, then try again.", ok = false)
+                else -> RestoreUi.Finished("TidyTV couldn't put your home screen back this time. Open Home screen on My TV to try again, or share logs.", ok = false)
+            }
+            _ui.update { it.copy(check = it.check.copy(repairingHome = false, message = msg)) }
+            wizard(WizardEvent.Busy(false))
+            runCheck()
         }
     }
 

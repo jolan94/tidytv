@@ -161,6 +161,9 @@ class FakeTv(
         commands += command
     }
 
+    /** Simulates the firmware putting its own Home preference back. */
+    fun setHomePreference(component: String) { preferredHome = component }
+
     fun pkgOf(component: String) = component.substringBefore('/')
     private fun enabled(pkg: String) = pkg in installed && pkg !in disabled
     private fun claimantsNow() = homeClaimants.keys.filter { enabled(pkgOf(it)) }.toSet()

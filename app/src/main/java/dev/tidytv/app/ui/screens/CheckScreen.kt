@@ -49,6 +49,7 @@ fun CheckScreen(
     onRecheck: () -> Unit,
     onBack: () -> Unit,
     onTurnOnRemoteHelper: (String) -> Unit = {},
+    onRepairHome: () -> Unit = {},
 ) {
     val report = s.report
     val busy = s.rebooting != null || s.running
@@ -56,6 +57,9 @@ fun CheckScreen(
         top = { TopBar(back = "My TV", onBack = onBack, tvName = tvName) },
         bottom = {
             if (s.rebooting == null) {
+                if (report?.repairableHome != null) BigButton(
+                    if (s.repairingHome) "Putting it back…" else "Put my home screen back", onRepairHome, color = Tidy.Blue, enabled = !s.repairingHome && !busy,
+                )
                 if (report != null && report.toTidy.isNotEmpty()) {
                     BigButton(
                         if (s.retidying) "Turning off…" else "Turn these off again",
@@ -97,7 +101,7 @@ fun CheckScreen(
                 if (report.backOn.isNotEmpty()) PackageCard("Switched back on", "Usually after a restart or a TV update.", report.backOn, labels)
                 if (report.newOnList.isNotEmpty()) PackageCard("New since your last tidy", null, report.newOnList, labels)
                 if (report.homeChanged) {
-                    Note("Your TV's old home screen took over again. Open Home screen on My TV to switch back.")
+                    Note(if (report.repairableHome != null) "Your TV's own home screen took over again, usually after a restart. Tap Put my home screen back." else "Your TV's old home screen took over again. Open Home screen on My TV to switch back.")
                 }
             }
         }

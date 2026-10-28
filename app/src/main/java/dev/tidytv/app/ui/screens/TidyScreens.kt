@@ -180,6 +180,7 @@ fun HomeScreenStep(
             Bubble("New home screen is on", color = Tidy.GreenSoft, textColor = Tidy.GreenInk) { Check(Tidy.Green, 30.dp) }
             HomePreview(s.app)
             Body(s.app.tip)
+            Body("Some TVs go back to their old home screen after a restart. If yours does, open Check my TV and tap Put my home screen back.", color = Tidy.Muted)
         }
         is HomeState.Problem -> {
             var ethernet by rememberSaveable { mutableStateOf(false) }

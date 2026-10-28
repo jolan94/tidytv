@@ -225,13 +225,16 @@ class LauncherHandoverTest {
         assertTrue(tv.commands.any { it.startsWith("pm grant com.gathin.tvhome") })
     }
 
-    @Test fun styledConfigIsWrittenBeforeTheLauncherStarts() = runTest {
+    @Test fun styledConfigIsWrittenAfterTheFirstStartAndThenTheLauncherRestartsToReadIt() = runTest {
         val tv = FakeTv.googleTv()
         styled(tv).run(apk, listOf("com.netflix.ninja"), sdk = 30)
-        // Written through the launcher's provider, so it owns the file (Android 14 can't read a shell-made one).
-        val push = tv.commands.indexOfFirst { it.contains("content write --uri content://com.gathin.tvhome.theme/config.json") }
+        // A folder the shell makes before the app has ever run is wiped at its first start (TCL, Android 11), so the dock
+        // goes in after that start, through the launcher's provider so it owns the file, and the launcher is restarted.
         val start = tv.commands.indexOfFirst { it.startsWith("am start -W") }
-        assertTrue(push in 0 until start)
+        val push = tv.commands.indexOfFirst { it.contains("content write --uri content://com.gathin.tvhome.theme/config.json") }
+        val restart = tv.commands.indexOfFirst { it.contains("am force-stop com.gathin.tvhome") && it.endsWith("echo restarted") }
+        val setHome = tv.commands.indexOfFirst { it.startsWith("cmd package set-home-activity") }
+        assertTrue("start $start, write $push, restart $restart", start in 0 until push && push < restart && restart < setHome)
     }
 
     @Test fun styledWithNoDockSkipsConfig() = runTest {

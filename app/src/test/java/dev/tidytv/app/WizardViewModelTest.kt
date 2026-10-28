@@ -378,6 +378,28 @@ class WizardViewModelTest {
         assertEquals("remembered for this TV", dev.tidytv.core.ops.SendFolder.MOVIES, again.ui.value.files.folder)
     }
 
+    @Test fun aTvThatTurnsItsOwnHomeScreenBackOnAfterARestartCanBeFixedFromCheckMyTv() = runTest(dispatcher) {
+        val demo = DemoBackend()
+        val tv: FakeTv = demo.tv.also { it.strictPriority = false }
+        val vm = vm(demo)
+        tidyThenOfferHome(vm)
+        vm.installHome(); advanceUntilIdle()
+        assertEquals(HomeState.Installed(dev.tidytv.core.lists.HomeApp.SIMPLE), vm.ui.value.home)
+        // A restart: the firmware turns the stock launcher back on and Home goes back to it.
+        val stock = dev.tidytv.core.lists.Launchers.LAUNCHERX
+        tv.disabled.remove(stock)
+        tv.setHomePreference("$stock/.home.HomeActivity")
+        vm.toDone(); vm.toHub(); vm.openCheck(); advanceUntilIdle()
+        val report = vm.ui.value.check.report!!
+        assertTrue("home change is noticed", report.homeChanged)
+        assertEquals(dev.tidytv.core.lists.HomeApp.SIMPLE, report.repairableHome)
+        vm.repairHome(); advanceUntilIdle()
+        assertTrue(vm.ui.value.check.message!!.ok)
+        assertEquals(dev.tidytv.core.lists.HomeApp.SIMPLE.component, tv.home())
+        assertTrue("the stock launcher is off again", stock in tv.disabled)
+        assertTrue("checked again afterwards", vm.ui.value.check.report!!.repairableHome == null)
+    }
+
     @Test fun oneAppCanBeTurnedBackOnByItself() = runTest(dispatcher) {
         val demo = DemoBackend()
         val tv = demo.tv
@@ -623,6 +645,7 @@ class WizardViewModelTest {
         assertEquals(HomeState.Installed(dev.tidytv.core.lists.HomeApp.STYLED), installed)
         val dir = "/sdcard/Android/data/com.gathin.tvhome/files"
         val dock = String(tv.pushed["$dir/config.json"]!!)
+        val restartsAtInstall = tv.lookRestarts // the handover restarts the launcher once to read the dock
 
         vm.openLook()
         vm.applyLook(LookId.GLASS); advanceUntilIdle()
@@ -632,7 +655,7 @@ class WizardViewModelTest {
         val config = String(tv.pushed["$dir/config.json"]!!)
         assertTrue(config, config.contains("dock_glass") && !config.contains("com.sample.app"))
         assertTrue("the owner's dock stays", dock.contains("com.netflix.ninja") && config.contains("com.netflix.ninja"))
-        assertEquals(1, tv.lookRestarts)
+        assertEquals(restartsAtInstall + 1, tv.lookRestarts)
 
         vm.applyPhoto(PickedFile("IMG_2041.jpg", 4_200_000) { java.io.ByteArrayInputStream(ByteArray(0)) }); advanceUntilIdle()
         look = (vm.ui.value.home as HomeState.Look).look

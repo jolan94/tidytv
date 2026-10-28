@@ -16,6 +16,8 @@ data class CheckReport(
     val stillOff: Int,
     /** The voice assistant or remote helpers are off, so the mic or shortcut keys may not work (the owner's call). */
     val remoteOff: List<String> = emptyList(),
+    /** TidyTV's home screen is still installed but no longer Home (a restart or update undid it): it can be made Home again. */
+    val repairableHome: HomeApp? = null,
 ) {
     val allGood get() = backOn.isEmpty() && newOnList.isEmpty() && !homeChanged
     /** What "Tidy these again" turns off. */
@@ -55,10 +57,11 @@ class TvCheck(private val tv: TvShell, private val log: ActionLog) {
         val ourHomeWasSet = HomeApp.of(lastSetHome?.substringBefore('/')) != null
         val homeNow = Parse.component(tv.run(Commands.RESOLVE_HOME))?.substringBefore('/')
         val homeChanged = ourHomeWasSet && HomeApp.of(homeNow) == null
+        val repairable = if (homeChanged) HomeApp.of(lastSetHome?.substringBefore('/'))?.takeIf { it.pkg in installed } else null
 
         val remoteOff = Protected.REMOTE_ESSENTIALS.filter { it in installed && it in disabled && it in ours }.sorted()
 
         // Counted like the hub and Done screens: the old launcher the home-screen switch turned off isn't an app.
-        return CheckReport(backOn, newOnList, homeChanged, stillOff = ours.count { (it in disabled || it !in installed) && !Launchers.isHomeApp(it) }, remoteOff = remoteOff)
+        return CheckReport(backOn, newOnList, homeChanged, stillOff = ours.count { (it in disabled || it !in installed) && !Launchers.isHomeApp(it) }, remoteOff = remoteOff, repairableHome = repairable)
     }
 }

@@ -197,6 +197,9 @@ class ScreenshotTest {
     @Test fun checkRemoteOff() = shoot("10c_check_remote_off", Step.CHECK, UiState(tv = summary, labels = allLabels,
         check = CheckState(report = dev.tidytv.core.ops.CheckReport(emptyList(), emptyList(), homeChanged = false, stillOff = 24,
             remoteOff = listOf("com.google.android.katniss", "com.tcl.keyhelp")))))
+    @Test fun checkHomeWentBack() = shoot("10d_check_home_back", Step.CHECK, UiState(tv = summary, labels = allLabels,
+        check = CheckState(report = dev.tidytv.core.ops.CheckReport(emptyList(), emptyList(), homeChanged = true, stillOff = 24,
+            repairableHome = dev.tidytv.core.lists.HomeApp.SIMPLE))))
     @Test fun checkAllGood() = shoot("10_check_all_good", Step.CHECK, UiState(tv = summary,
         check = CheckState(report = dev.tidytv.core.ops.CheckReport(emptyList(), emptyList(), homeChanged = false, stillOff = 24))))
     @Test fun checkFound() = shoot("10b_check_found", Step.CHECK, UiState(tv = summary,

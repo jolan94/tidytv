@@ -1,7 +1,7 @@
 What's new in 0.10.0
+• Home screen went back after a restart? Check my TV now has Put my home screen back.
+• The apps you pick for the Apple-style home screen now stick on the first install.
 • Connecting works better on slow TVs, with a clear retry.
 • Clearer help when Wi-Fi blocks the home screen change.
-• Lists for 335 TV models (was 252). TVs without a list can still pick apps by hand.
-• Storage and memory shown on My TV.
-• Choose where sent files go on the TV.
-• USB and file browser helpers are always kept.
+• Lists for 335 TV models. TVs without a list can still pick apps by hand.
+• Storage and memory on My TV, and a choice of where sent files go.

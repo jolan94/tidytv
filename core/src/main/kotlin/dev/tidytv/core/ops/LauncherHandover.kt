@@ -146,19 +146,21 @@ class LauncherHandover(
 
     private suspend fun afterInstall(homeBefore: String?, stock: String?, dockApps: List<String>, sdk: Int): HandoverOutcome {
 
-        // 2. Give it the dock apps. cleanyourtv reads config.json at start (tools/theme.sh);
-        // tv-detox takes them as start extras below.
-        if (app.dockByConfig) {
-            // Through the launcher's own provider (LauncherLook): a file the shell creates can't be read on Android 14.
-            if (dockApps.isNotEmpty()) LauncherLook(tv, clock).writeDock(dockApps)
-            tv.run(Commands.grantLocation(ourPkg)) // shows the Wi-Fi name; harmless if refused
-        }
+        // 2. tv-detox takes the dock apps as start extras (below); cleanyourtv reads config.json, written after its first start.
+        if (app.dockByConfig) tv.run(Commands.grantLocation(ourPkg)) // shows the Wi-Fi name; harmless if refused
 
         // 3. Start it before anything else changes; "Status: ok" and no "Error" line, both required.
         val extras = if (app.dockByConfig) emptyList() else dockApps
         val start = tv.run(Commands.startLauncher(ours, extras, clock() / 1000))
         if (!start.contains("Status: ok") || Parse.lines(start).any { it.startsWith("Error") }) {
             return HandoverOutcome.StartFailed(start.trim())
+        }
+        if (app.dockByConfig && dockApps.isNotEmpty()) {
+            // Only now: the first start makes the launcher's own folder, and a folder the shell made before that is wiped
+            // when the app first runs (seen on a TCL, Android 11), which silently dropped the owner's dock. Written through
+            // the launcher's provider (a shell-made file can't be read on Android 14), then it restarts to read it.
+            LauncherLook(tv, clock).writeDock(dockApps)
+            tv.run(Commands.restartLook(ourPkg))
         }
 
         // 4. Google TV's setup app claims Home at priority 1 and takes it as soon as the stock launcher is off
