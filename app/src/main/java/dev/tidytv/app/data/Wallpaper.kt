@@ -23,8 +23,13 @@ object Wallpaper {
     const val WIDTH = 1920
     const val HEIGHT = 1080
     const val MAX_BYTES = 600 * 1024
+    /** "Sharper picture" for 4K TVs: the full 3840x2160 and a bigger file (feedback c21592 asked for it). */
+    const val WIDTH_4K = 3840
+    const val MAX_BYTES_4K = 3 * 1024 * 1024
 
-    fun fromPhoto(originalBytes: Long, open: () -> InputStream): WallpaperImage? = runCatching {
+    fun fromPhoto(originalBytes: Long, sharp: Boolean = false, open: () -> InputStream): WallpaperImage? = runCatching {
+        val targetW = if (sharp) WIDTH_4K else WIDTH
+        val maxBytes = if (sharp) MAX_BYTES_4K else MAX_BYTES
         val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
         open().use { BitmapFactory.decodeStream(it, null, bounds) }
         if (bounds.outWidth <= 0 || bounds.outHeight <= 0) return null
@@ -33,20 +38,20 @@ object Wallpaper {
 
         // Decode at the smallest power-of-two size that still covers the 16:9 crop at full HD.
         var sample = 1
-        while (min(w / (sample * 2), h / (sample * 2) * 16 / 9) >= WIDTH) sample *= 2
+        while (min(w / (sample * 2), h / (sample * 2) * 16 / 9) >= targetW) sample *= 2
         val decoded = open().use { BitmapFactory.decodeStream(it, null, BitmapFactory.Options().apply { inSampleSize = sample }) } ?: return null
         val upright = if (rotation == 0) decoded else
             Bitmap.createBitmap(decoded, 0, 0, decoded.width, decoded.height, Matrix().apply { postRotate(rotation.toFloat()) }, true)
                 .also { if (it !== decoded) decoded.recycle() }
 
         val cropped = cropTo16x9(upright)
-        val outW = min(WIDTH, cropped.width)
+        val outW = min(targetW, cropped.width)
         val outH = (outW * 9f / 16f).roundToInt()
         val scaled = if (cropped.width == outW) cropped else Bitmap.createScaledBitmap(cropped, outW, outH, true)
 
         var quality = 85
         var bytes = compress(scaled, quality)
-        while (bytes.size > MAX_BYTES && quality > 55) { quality -= 10; bytes = compress(scaled, quality) }
+        while (bytes.size > maxBytes && quality > 55) { quality -= 10; bytes = compress(scaled, quality) }
         WallpaperImage(bytes, scaled.width, scaled.height, originalBytes)
     }.getOrNull()
 

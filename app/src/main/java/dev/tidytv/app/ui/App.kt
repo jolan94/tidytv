@@ -44,6 +44,8 @@ class Host(
     val shareCard: (dev.tidytv.app.data.ShareStats) -> Unit,
     val openStar: () -> Unit,
     val openUrl: (String) -> Unit = {},
+    /** Share a screenshot of the TV (PNG bytes). */
+    val shareScreenshot: (ByteArray) -> Unit = {},
     /** The rating card's memory and the store review; null in previews and tests. */
     val rating: dev.tidytv.app.data.RatingStore? = null,
     val requestReview: () -> Unit = {},
@@ -54,6 +56,7 @@ fun TidyApp(s: UiState, vm: WizardViewModel, onShareLogs: () -> Unit, host: Host
     var feedback by remember { mutableStateOf<FeedbackRequest?>(null) }
     var card by remember { mutableStateOf<Pair<dev.tidytv.app.data.ShareStats, android.graphics.Bitmap>?>(null) }
     var showRating by remember { mutableStateOf(false) }
+    s.remote.shot?.let { png -> androidx.compose.runtime.LaunchedEffect(png) { host.shareScreenshot(png); vm.screenshotShared() } }
     val actions = remember(s.tidy, s.done, s.tv, s.labels) {
         AppActions(
             rate = { showRating = true },
@@ -143,7 +146,7 @@ private fun StepScreen(step: Step, s: UiState, vm: WizardViewModel?, onShareLogs
             s.tv, s.done.records.offByUs().count { !dev.tidytv.core.lists.Launchers.isHomeApp(it) }, s.wizard.kind == dev.tidytv.core.flow.TvKind.FIRE_TV,
             { vm?.openTidy() }, { vm?.openRemote() }, { vm?.openFiles() }, { vm?.openHomeScreen() }, { vm?.openRestore() }, { vm?.back() }, { vm?.openCheck() }, { vm?.openSpace() }, { vm?.openAds() }, { vm?.openApps() }, s.hubFacts,
         )
-        Step.REMOTE -> RemoteScreen(s.remote, s.tv?.title, { vm?.press(it) }, { vm?.type(it) }, { vm?.launchApp(it) }, { vm?.dismissRemoteMessage() }, { vm?.toHub() }, { vm?.togglePin(it) }, { p, d -> vm?.movePin(p, d) })
+        Step.REMOTE -> RemoteScreen(s.remote, s.tv?.title, { vm?.press(it) }, { vm?.type(it) }, { vm?.launchApp(it) }, { vm?.dismissRemoteMessage() }, { vm?.toHub() }, { vm?.togglePin(it) }, { p, d -> vm?.movePin(p, d) }, { vm?.takeScreenshot() })
         Step.SEND_FILES -> SendFilesScreen(s.files, s.tv?.title, { vm?.sendFiles(it) }, { vm?.cancelFile(it) }, { vm?.retryFile(it) }, { vm?.toHub() }, { vm?.setSendFolder(it) })
         Step.UNSUPPORTED -> UnsupportedScreen { vm?.back() }
         Step.GET_READY -> GetReadyScreen(s.wizard.kind, s.wizard.mode) { vm?.ready() }
@@ -162,7 +165,7 @@ private fun StepScreen(step: Step, s: UiState, vm: WizardViewModel?, onShareLogs
         Step.HOME_SCREEN -> HomeScreenStep(
             s.home, s.tidy.disabledCount, { vm?.toggleDock(it) }, { vm?.chooseHome(it) }, { vm?.installHome() }, { vm?.skipHome() },
             { a, eth -> vm?.homeAction(a, eth) }, { vm?.homeContinue() }, onShareLogs, { vm?.cancelPlayStore() },
-            { vm?.openLook() }, { vm?.closeLook() }, { vm?.applyLook(it) }, { vm?.applyPhoto(it) },
+            { vm?.openLook() }, { vm?.closeLook() }, { vm?.applyLook(it) }, { vm?.applyPhoto(it) }, { vm?.setSharp(it) },
         )
         Step.DONE -> DoneScreen(
             s.tv, s.done, s.tidy.disabledCount, s.wizard.mode == Mode.RESTORE, s.labels,

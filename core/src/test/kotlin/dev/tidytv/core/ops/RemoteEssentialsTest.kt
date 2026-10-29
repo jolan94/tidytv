@@ -37,6 +37,12 @@ class RemoteEssentialsTest {
 }
 
 class StorageHelpersTest {
+    @Test fun servicesThatHandleTheRemotesOwnButtonsAreNeverOffered() {
+        for (pkg in listOf("com.haier.appmanager.hotkeyservice", "com.vendor.tv.globalkeyreceiver", "com.vendor.keyhandler", "com.vendor.remotekey.service")) {
+            assertTrue("$pkg should be protected", Protected.isProtected(pkg))
+        }
+    }
+
     @Test fun usbAndFileBrowsingHelpersAreNeverOffered() {
         for (pkg in listOf("com.android.documentsui", "com.google.android.documentsui", "com.android.mtp", "com.android.externalstorage", "com.vendor.mtpservice", "com.vendor.usbstorage")) {
             assertTrue("$pkg should be protected", Protected.isProtected(pkg))

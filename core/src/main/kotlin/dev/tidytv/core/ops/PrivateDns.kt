@@ -48,8 +48,22 @@ class PrivateDns(private val tv: TvShell, private val log: ActionLog, private va
         return if (ok) after else read()
     }
 
-    /** Puts Private DNS back as it was before TidyTV first touched it. */
+    /**
+     * Turns ad blocking off. When TidyTV turned it on, Private DNS goes back as it was before. When the owner (or another
+     * app) had set AdGuard themselves, there is nothing of ours to undo: the old values are noted, then Private DNS is
+     * switched off, and Restore puts the owner's own setting back (feedback d44123: the button said "off" and it stayed on).
+     */
     suspend fun turnOff(): DnsState {
+        val ours = log.records().changedSettings()
+        if (MODE_KEY !in ours) {
+            val now = read()
+            if (now.mode != null || now.host != null) {
+                remember(MODE_KEY, now.mode)
+                remember(SPECIFIER_KEY, now.host)
+                tv.run(Settings.put("global", MODE, "off"))
+                return read()
+            }
+        }
         undo()
         return read()
     }

@@ -32,6 +32,18 @@ class PrivateDnsTest {
         assertEquals(DnsState("hostname", "dns.quad9.net"), dns.read())
     }
 
+    @Test fun adGuardThatTheOwnerSetThemselvesCanBeTurnedOffAndRestoreBringsItBack() = runTest {
+        val tv = FakeTv.googleTv().apply { settings["global/private_dns_mode"] = "hostname"; settings["global/private_dns_specifier"] = "dns.adguard-dns.com" }
+        val log = MemoryActionLog()
+        val dns = PrivateDns(tv, log) { 1L }
+        assertEquals(AdBlockProvider.ADS, dns.read().provider)
+        assertNull("it really is off afterwards", dns.turnOff().provider)
+        assertEquals("off", tv.settings["global/private_dns_mode"])
+        val r = Restorer(tv, log) { 2L }.run()
+        assertTrue(r.toString(), r is RestoreOutcome.Done)
+        assertEquals(AdBlockProvider.ADS, dns.read().provider)
+    }
+
     @Test fun turningOnTwiceKeepsTheOriginalValues() = runTest {
         val tv = FakeTv.googleTv().apply { settings["global/private_dns_mode"] = "opportunistic" }
         val dns = PrivateDns(tv, MemoryActionLog()) { 1L }

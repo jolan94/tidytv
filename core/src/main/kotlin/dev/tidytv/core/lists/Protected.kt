@@ -72,6 +72,8 @@ object Protected {
         "networkstack", "permissioncontroller", "packageinstaller",
         // USB drives and file browsing: a TV whose owner could no longer open a USB stick (feedback ba2806).
         "documentsui", "android.mtp", "mtpservice", "usbstorage", "externalstorage",
+        // Services that turn the remote's own buttons (YouTube, Settings, Live TV) into actions (feedback 9ee210).
+        "hotkey", "globalkey", "keyhandler", "keyservice", "keymanager", "keyreceiver", "remotekey",
     )
 
     /** Android's own content providers, except the few a TV can live without (upstream PROMPT.md). */

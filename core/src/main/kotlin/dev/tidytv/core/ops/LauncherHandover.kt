@@ -36,6 +36,9 @@ sealed interface HandoverOutcome {
  * up, only then turn the stock launcher off, set Home after (Android drops the preference when the
  * set of HOME apps changes), then check where Home landed and roll back if it isn't ours.
  */
+private const val ROLE_MIN_SDK = 29
+private const val ROLE_MAX_SDK = 34
+
 class LauncherHandover(
     private val tv: TvShell,
     private val log: ActionLog,
@@ -238,7 +241,10 @@ class LauncherHandover(
     }
 
     private suspend fun setOurs(sdk: Int) {
-        if (sdk >= 29) tv.run(Commands.addHomeRole(ourPkg))
+        // Android 14 TVs (Motorola, Lumio, feedback e8e6ac / 1d14ec): once Google TV's setup app is off, the role command
+        // hangs for over a minute and the TV drops off the network. cleanyourtv's tested install uses only the Home
+        // preference there, so that is all this does from Android 14; the Home-key check afterwards still decides success.
+        if (sdk in ROLE_MIN_SDK until ROLE_MAX_SDK) tv.run(Commands.addHomeRole(ourPkg))
         tv.run(Commands.setHome(ours))
     }
 

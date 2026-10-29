@@ -408,6 +408,8 @@ class FakeTv(
             c == Commands.WIFI_OWNERS -> "cname=$wifiOwner\n"
             c == Commands.TV_INPUTS -> liveOwners.joinToString("") { "  inputId: $it/.HdmiService/HW5\n" }
 
+            c == dev.tidytv.core.ops.TvScreenshot.TAKE -> { apkFiles[dev.tidytv.core.ops.TvScreenshot.PATH] = ByteArray(200) { if (it < 4) byteArrayOf(0x89.toByte(), 0x50, 0x4E, 0x47)[it] else 7 }; "ok\n" }
+            c == dev.tidytv.core.ops.TvScreenshot.CLEAN -> { apkFiles.remove(dev.tidytv.core.ops.TvScreenshot.PATH); "" }
             c.startsWith("settings get ") -> (settings["${args[2]}/${args[3]}"] ?: "null") + "\n"
             c.startsWith("settings put ") -> { settings["${args[2]}/${args[3]}"] = args[4]; "" }
             c.startsWith("settings delete ") -> { settings.remove("${args[2]}/${args[3]}"); "Deleted 1 rows\n" }

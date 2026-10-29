@@ -122,6 +122,7 @@ fun HomeScreenStep(
     onCloseLook: () -> Unit = {},
     onApplyLook: (dev.tidytv.app.LookId) -> Unit = {},
     onApplyPhoto: (dev.tidytv.app.PickedFile) -> Unit = {},
+    onSharp: (Boolean) -> Unit = {},
 ) {
     when (s) {
         is HomeState.Offer -> if (s.untested) ScreenFrame(bottom = { BigButton("OK", onSkip) }) {
@@ -136,6 +137,10 @@ fun HomeScreenStep(
                 Text("Apple TV style is on", style = MaterialTheme.typography.titleMedium, color = Tidy.Ink, modifier = Modifier.weight(1f))
                 TextLink("Change the look", onOpenLook, icon = Icons.Rounded.Palette)
             }
+            s.ourHome?.let { own -> Outline {
+                Text("Change the apps on your home screen", style = MaterialTheme.typography.titleMedium, color = Tidy.Ink)
+                Text(own.tip, style = MaterialTheme.typography.bodyMedium, color = Tidy.Muted)
+            } }
             Title("Want a cleaner home screen?")
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text("Just your apps, no ads.", style = MaterialTheme.typography.bodyLarge, color = Tidy.Muted, modifier = Modifier.weight(1f))
@@ -171,7 +176,7 @@ fun HomeScreenStep(
             Bubble("Setting up your new home screen…") { Spinner(26.dp) }
             Body("About 30 seconds. Please don't press the remote.")
         }
-        is HomeState.Look -> LookScreen(s.look, onCloseLook, onApplyLook, onApplyPhoto)
+        is HomeState.Look -> LookScreen(s.look, onCloseLook, onApplyLook, onApplyPhoto, onSharp)
         is HomeState.Installed -> ScreenFrame(bottom = {
             if (s.app == HomeApp.STYLED) BigButton("Pick a look", onOpenLook, color = Tidy.BlueSoft, textColor = Tidy.Ink)
             BigButton("Continue", onContinue)

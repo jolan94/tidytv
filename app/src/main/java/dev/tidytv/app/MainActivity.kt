@@ -50,7 +50,7 @@ class MainActivity : ComponentActivity() {
                     updates = if (!dev.tidytv.app.data.UpdateCheck.needed(installerOf(app.packageName))) null
                         else dev.tidytv.app.data.UpdateCheck(store.updateFile, BuildConfig.VERSION_NAME, ::httpGet),
                     looks = { id -> dev.tidytv.app.data.Looks.load(app.assets, id) },
-                    photoWallpaper = { f -> dev.tidytv.app.data.Wallpaper.fromPhoto(f.size) { f.open() } },
+                    photoWallpaper = { f, sharp -> dev.tidytv.app.data.Wallpaper.fromPhoto(f.size, sharp) { f.open() } },
                 )
             }
         }
@@ -106,6 +106,17 @@ class MainActivity : ComponentActivity() {
                 addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
             }
             startActivity(Intent.createChooser(send, "Share your TidyTV card"))
+        },
+        shareScreenshot = { png ->
+            val dir = File(cacheDir, "share").apply { mkdirs() }
+            val file = File(dir, "tv-screenshot.png").apply { writeBytes(png) }
+            val uri = FileProvider.getUriForFile(this, "$packageName.files", file)
+            val send = Intent(Intent.ACTION_SEND).apply {
+                type = "image/png"
+                putExtra(Intent.EXTRA_STREAM, uri)
+                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            }
+            startActivity(Intent.createChooser(send, "Share the TV screenshot"))
         },
         openStar = { runCatching { startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(REPO))) } },
         openUrl = { url -> runCatching { startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url))) } },

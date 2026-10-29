@@ -46,6 +46,7 @@ import androidx.compose.material.icons.rounded.FastForward
 import androidx.compose.material.icons.rounded.FastRewind
 import androidx.compose.material.icons.rounded.Home
 import androidx.compose.material.icons.rounded.Keyboard
+import androidx.compose.material.icons.rounded.PhotoCamera
 import androidx.compose.material.icons.rounded.KeyboardArrowDown
 import androidx.compose.material.icons.rounded.KeyboardArrowUp
 import androidx.compose.material.icons.rounded.Star
@@ -137,6 +138,7 @@ fun RemoteScreen(
     onBack: () -> Unit,
     onPin: (String) -> Unit = {},
     onMovePin: (String, Int) -> Unit = { _, _ -> },
+    onScreenshot: () -> Unit = {},
 ) {
     val haptic = LocalHapticFeedback.current
     val enabled = !s.reconnecting
@@ -155,7 +157,7 @@ fun RemoteScreen(
                 Modifier.fillMaxSize().clip(RoundedCornerShape(28.dp)).background(Tidy.Card).padding(horizontal = 16.dp, vertical = 12.dp),
                 verticalArrangement = Arrangement.spacedBy(10.dp),
             ) {
-                TopRow(tvName, enabled, onBack, onPower = { press(RemoteKey.POWER) }, onKeyboard = { keyboard = true }, onApps = { allApps = true })
+                TopRow(tvName, enabled, onBack, onPower = { press(RemoteKey.POWER) }, onKeyboard = { keyboard = true }, onApps = { allApps = true }, onScreenshot = onScreenshot, shotBusy = s.shotBusy)
 
                 if (s.message != null) {
                     Column(verticalArrangement = Arrangement.spacedBy(0.dp)) {
@@ -202,7 +204,7 @@ fun RemoteScreen(
 // ---------- top row ----------
 
 @Composable
-private fun TopRow(tvName: String?, enabled: Boolean, onBack: () -> Unit, onPower: () -> Unit, onKeyboard: () -> Unit, onApps: () -> Unit) {
+private fun TopRow(tvName: String?, enabled: Boolean, onBack: () -> Unit, onPower: () -> Unit, onKeyboard: () -> Unit, onApps: () -> Unit, onScreenshot: () -> Unit, shotBusy: Boolean) {
     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
         RoundIcon(Icons.Rounded.PowerSettingsNew, "Power", enabled, Tidy.RedSoft, Tidy.Red, onClick = onPower)
         Row(
@@ -220,6 +222,7 @@ private fun TopRow(tvName: String?, enabled: Boolean, onBack: () -> Unit, onPowe
             )
         }
         RoundIcon(Icons.Rounded.Keyboard, "Keyboard", enabled, Tidy.BlueSoft, Tidy.Blue, onClick = onKeyboard)
+        RoundIcon(Icons.Rounded.PhotoCamera, "Screenshot of the TV", enabled && !shotBusy, Tidy.BlueSoft, Tidy.Blue, onClick = onScreenshot)
         RoundIcon(Icons.Rounded.Apps, "Apps", enabled, Tidy.BlueSoft, Tidy.Blue, onClick = onApps)
     }
 }

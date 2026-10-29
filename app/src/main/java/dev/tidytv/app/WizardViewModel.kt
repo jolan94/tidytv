@@ -176,6 +176,8 @@ sealed interface HomeState {
         val available: List<HomeApp> = listOf(HomeApp.SIMPLE),
         /** The Apple TV style home screen is already Home, so its look can be changed. */
         val styledIsHome: Boolean = false,
+        /** One of TidyTV's home screens is Home now, so how to move and remove its apps is shown. */
+        val ourHome: HomeApp? = null,
         /** The TV's home app is one TidyTV hasn't tested: no change is offered, only a one-line card. */
         val untested: Boolean = false,
     ) : HomeState
@@ -201,6 +203,8 @@ data class LookState(
     val applying: String? = null,
     /** The look set in this session. */
     val current: String? = null,
+    /** Send the owner's photo at 4K instead of full HD. */
+    val sharp: Boolean = false,
     val message: RestoreUi.Finished? = null,
 )
 
@@ -255,6 +259,10 @@ data class RemoteState(
     val loadingApps: Boolean = false,
     /** The link dropped; the remote is getting it back. */
     val reconnecting: Boolean = false,
+    /** A picture of the TV's screen is being made. */
+    val shotBusy: Boolean = false,
+    /** The finished picture, waiting for the screen to share it; cleared once taken. */
+    val shot: ByteArray? = null,
     val message: String? = null,
 )
 
@@ -335,7 +343,7 @@ class WizardViewModel(
     /** A bundled look's files (assets/themes/<id>), or null when it isn't bundled. */
     private val looks: (String) -> dev.tidytv.core.ops.LookFiles? = { null },
     /** Shrinks a photo from the phone into a TV wallpaper. Android only. */
-    private val photoWallpaper: (PickedFile) -> dev.tidytv.app.data.WallpaperImage? = { null },
+    private val photoWallpaper: (PickedFile, Boolean) -> dev.tidytv.app.data.WallpaperImage? = { _, _ -> null },
     /** Where photos are decoded and shrunk; tests pass their own. */
     private val imageWork: kotlinx.coroutines.CoroutineDispatcher = kotlinx.coroutines.Dispatchers.Default,
 ) : ViewModel() {
@@ -673,6 +681,23 @@ class WizardViewModel(
     fun launchApp(app: RemoteApp) {
         viewModelScope.launch { withRemote { it.launch(dev.tidytv.core.ops.TvApp(app.pkg, app.component)) } }
     }
+
+    /** "Screenshot": what the TV is showing right now, handed to the phone's share sheet. */
+    fun takeScreenshot() {
+        if (_ui.value.remote.shotBusy) return
+        _ui.update { it.copy(remote = it.remote.copy(shotBusy = true, message = null)) }
+        viewModelScope.launch {
+            val png = withRemoteShell { s -> dev.tidytv.core.ops.TvScreenshot.take(s) }
+            trace.line("screenshot: ${png?.size ?: "none"}")
+            _ui.update { it.copy(remote = it.remote.copy(shotBusy = false, shot = png,
+                message = if (png == null) "The TV didn't give a picture. Some TVs block screenshots while a protected video plays." else null)) }
+        }
+    }
+
+    fun screenshotShared() = _ui.update { it.copy(remote = it.remote.copy(shot = null)) }
+
+    /** Runs [block] with the TV's shell under the lock, reconnecting once if the link dropped. */
+    private suspend fun <T> withRemoteShell(block: suspend (TvShell) -> T): T? = withShell(block)
 
     fun dismissRemoteMessage() = _ui.update { it.copy(remote = it.remote.copy(message = null)) }
 
@@ -1227,6 +1252,7 @@ class WizardViewModel(
                 state == null -> RestoreUi.Finished("The TV stopped answering. Check it's on, then try again.", ok = false)
                 wanted != null && state.provider != wanted -> RestoreUi.Finished("This TV didn't accept the change, so it was left as it was.", ok = false)
                 wanted != null -> RestoreUi.Finished("Ad blocking is on. Open an app to see the difference.", ok = true)
+                state.provider != null -> RestoreUi.Finished("Ad blocking is still on. This TV didn't take the change; turn Private DNS off in the TV's network settings.", ok = false)
                 else -> RestoreUi.Finished("Ad blocking is off. Your TV's DNS is back as it was.", ok = true)
             }
             _ui.update { it.copy(ads = it.ads.copy(busy = false, dns = state ?: it.ads.dns, message = msg)) }
@@ -1365,8 +1391,9 @@ class WizardViewModel(
         fetchIcons(options.map { it.pkg })
         viewModelScope.launch {
             val home = withShell { s -> dev.tidytv.core.ops.Parse.component(s.run(dev.tidytv.core.ops.Commands.RESOLVE_HOME)) }
-            if (home?.substringBefore('/') == HomeApp.STYLED.pkg) _ui.update { u ->
-                (u.home as? HomeState.Offer)?.let { u.copy(home = it.copy(styledIsHome = true)) } ?: u
+            val ours = HomeApp.of(home?.substringBefore('/'))
+            if (ours != null) _ui.update { u ->
+                (u.home as? HomeState.Offer)?.let { u.copy(home = it.copy(styledIsHome = ours == HomeApp.STYLED, ourHome = ours)) } ?: u
             }
         }
     }
@@ -1387,9 +1414,11 @@ class WizardViewModel(
         putLook(id.id, "${id.title} is on your TV.") { files }
     }
 
+    fun setSharp(on: Boolean) = setLook { it.copy(sharp = on) }
+
     /** The owner's own photo, made small on the phone first (see Wallpaper). */
     fun applyPhoto(file: PickedFile) = putLook("photo", null) {
-        val img = photoWallpaper(file) ?: return@putLook null
+        val img = photoWallpaper(file, (_ui.value.home as? HomeState.Look)?.look?.sharp == true) ?: return@putLook null
         lastPhoto = img
         dev.tidytv.core.ops.LookFiles("photo", PHOTO_CONFIG, wallpaper = img.jpeg)
     }

@@ -1,0 +1,7 @@
+What's new in 0.10.1
+• Fixes the home screen change stopping on some Android 14 TVs (Motorola, Lumio).
+• Block ads can now be turned off even when AdGuard was set by you.
+• Take a screenshot of your TV from the remote.
+• Send your own wallpaper at 4K for a sharper picture.
+• Remote button services (YouTube, Settings, Live TV keys) are kept on.
+• Move and remove apps: the steps now show on the Home screen page.

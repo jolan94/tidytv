@@ -1,5 +1,7 @@
 package dev.tidytv.app.ui.screens
 
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.clickable
 import android.graphics.BitmapFactory
 import android.provider.OpenableColumns
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -52,6 +54,7 @@ fun LookScreen(
     onClose: () -> Unit,
     onApplyLook: (LookId) -> Unit,
     onApplyPhoto: (PickedFile) -> Unit,
+    onSharp: (Boolean) -> Unit = {},
 ) {
     val resolver = LocalContext.current.contentResolver
     val busy = look.applying != null
@@ -84,6 +87,13 @@ fun LookScreen(
             }
         }
         look.message?.let { if (it.ok) InfoChip(Icons.Rounded.CheckCircle, it.message) else Note(it.message) }
+        Row(Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp)).clickable(enabled = !busy) { onSharp(!look.sharp) }, verticalAlignment = Alignment.CenterVertically) {
+            androidx.compose.material3.Checkbox(look.sharp, { onSharp(it) }, enabled = !busy)
+            Column(Modifier.weight(1f)) {
+                Text("Sharper photo for a 4K TV", style = MaterialTheme.typography.bodyLarge, color = Tidy.Ink)
+                Text("Sends your photo at 4K (up to 3 MB) instead of full HD.", style = MaterialTheme.typography.bodyMedium, color = Tidy.Muted)
+            }
+        }
         val photoOn = look.current == "photo"
         // The looks, then "Your photo" (null) as the last tile.
         for (row in (LookId.entries + null).chunked(2)) {

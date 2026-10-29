@@ -25,7 +25,17 @@ class LauncherHandoverTest {
         assertTrue(Launchers.LAUNCHERX in log.records().disabledByUs())
         assertEquals(launcherx, log.records().originalHome())
         assertTrue(tv.commands.any { it.contains("--es apps com.netflix.ninja,com.google.android.youtube.tv") })
+        assertTrue("Android 14 never gets the role command: it hangs once the setup app is off", tv.commands.none { it.startsWith("cmd role add-role-holder") })
+        assertTrue(tv.commands.any { it.startsWith("cmd package set-home-activity") })
+    }
+
+    @Test fun androidTenToThirteenStillSetTheHomeRole() = runTest {
+        val tv = FakeTv.googleTv(sdk = 33)
+        handover(tv).run(apk, emptyList(), sdk = 33)
         assertTrue(tv.commands.any { it.startsWith("cmd role add-role-holder") })
+        val old = FakeTv.googleTv(sdk = 28)
+        handover(old).run(apk, emptyList(), sdk = 28)
+        assertTrue("Android 9 has no roles", old.commands.none { it.startsWith("cmd role add-role-holder") })
     }
 
     @Test fun startIsConfirmedBeforeStockLauncherIsTouched() = runTest {

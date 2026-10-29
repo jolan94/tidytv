@@ -26,7 +26,7 @@ SITE = ROOT / "site"
 BASE = "https://tidytv.winkle.dev"
 REPO = "https://github.com/jolan94/tidytv"
 LIST_URL = "https://github.com/Gathin23/cleanyourtv/blob/main/examples/{id}/debloat.txt"
-VERSION = "0.10.0"
+VERSION = "0.10.1"
 PLAY = "https://play.google.com/store/apps/details?id=com.appfactory.tidytv"
 APK = "https://github.com/jolan94/tidytv/releases/latest/download/TidyTV.apk"  # stable name, uploaded with every release
 TODAY = date.today().isoformat()

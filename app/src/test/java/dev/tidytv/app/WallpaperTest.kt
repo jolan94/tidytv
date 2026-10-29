@@ -39,6 +39,16 @@ class WallpaperTest {
         assertEquals(1920, back.width)
     }
 
+    @Test fun aSharperPhotoForA4kTvKeepsTheFullFourKResolution() {
+        val src = photo(4000, 3000)
+        val out = Wallpaper.fromPhoto(src.size.toLong(), sharp = true) { src.inputStream() }!!
+        assertEquals(3840, out.width)
+        assertEquals(2160, out.height)
+        assertTrue("${out.jpeg.size} bytes", out.jpeg.size <= Wallpaper.MAX_BYTES_4K)
+        val normal = Wallpaper.fromPhoto(src.size.toLong()) { src.inputStream() }!!
+        assertTrue("the sharper one is bigger than the full-HD one", out.jpeg.size > normal.jpeg.size)
+    }
+
     @Test fun aPortraitPhotoIsCroppedToTheScreen() {
         val src = photo(1500, 2000)
         val out = Wallpaper.fromPhoto(src.size.toLong()) { src.inputStream() }!!

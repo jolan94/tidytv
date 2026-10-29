@@ -66,7 +66,7 @@ class WizardViewModelTest {
 
     private fun vm(demo: DemoBackend, lists: ListCatalog = catalog) =
         WizardViewModel(Store(dir), Trace(File(dir, "logs")), { NoNetwork }, demo, { lists }, { home -> home.pkg.toByteArray() },
-            looks = { id -> if (id == "glass") glassLook else null }, photoWallpaper = { photo }, imageWork = dispatcher)
+            looks = { id -> if (id == "glass") glassLook else null }, photoWallpaper = { _, _ -> photo }, imageWork = dispatcher)
 
     /** Connects to the Demo TV, which lands on the My TV hub; [tidy] then opens Tidy up. */
     private fun TestScope.connectToDemo(vm: WizardViewModel, tidy: Boolean = true) {
@@ -398,6 +398,20 @@ class WizardViewModelTest {
         assertEquals(dev.tidytv.core.lists.HomeApp.SIMPLE.component, tv.home())
         assertTrue("the stock launcher is off again", stock in tv.disabled)
         assertTrue("checked again afterwards", vm.ui.value.check.report!!.repairableHome == null)
+    }
+
+    @Test fun theRemoteCanScreenshotTheTvAndHandTheImageToTheShareSheet() = runTest(dispatcher) {
+        val demo = DemoBackend()
+        val vm = vm(demo)
+        vm.choose(TvKind.ANDROID_TV)
+        connectToDemo(vm, tidy = false)
+        vm.openRemote(); advanceUntilIdle()
+        vm.takeScreenshot(); advanceUntilIdle()
+        val shot = vm.ui.value.remote.shot
+        assertTrue("a PNG came back", shot != null && shot.size > 64 && shot[0] == 0x89.toByte())
+        assertTrue(!vm.ui.value.remote.shotBusy)
+        vm.screenshotShared()
+        assertEquals(null, vm.ui.value.remote.shot)
     }
 
     @Test fun oneAppCanBeTurnedBackOnByItself() = runTest(dispatcher) {
