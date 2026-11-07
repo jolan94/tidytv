@@ -1,0 +1,5 @@
+What's new in 0.11.0
+• Connecting is steadier: TidyTV now reads only your TV's main profile and tries up to 5 times if the link drops.
+• Home screen change now gets past Google's install check, frees space if the TV is full, and starts the new home screen when it was installed for the wrong user.
+• 456 TV lists (121 new) and the latest Apple TV style home screen.
+• A note before switching home screens: some remote buttons may stop, and you can switch back any time.

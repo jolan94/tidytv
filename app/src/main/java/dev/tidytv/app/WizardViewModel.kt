@@ -528,7 +528,7 @@ class WizardViewModel(
         // nothing for 25 s (a blocked read can't be cancelled any other way), then it is reconnected and tried again.
         var current = s
         var snap: TvSnapshot? = null
-        for (attempt in 1..3) {
+        for (attempt in 1..5) {
             val watchdog = viewModelScope.launch { delay(SNAPSHOT_PATIENCE_MS); trace.line("no answer in ${SNAPSHOT_PATIENCE_MS / 1000} s, closing the link"); b.close(current) }
             snap = try {
                 tvLock.withLock { TvReader.snapshot(current) }
@@ -539,8 +539,8 @@ class WizardViewModel(
             } finally {
                 watchdog.cancel()
             }
-            if (snap != null || attempt == 3) break
-            delay(2_000)
+            if (snap != null || attempt == 5) break
+            delay(3_000L * attempt)
             b.close(current)
             val link = b.connect(tv) {}
             if (link.attempt == Attempt.CONNECTED && link.shell != null) { current = link.shell; shell = current } else trace.line("reconnect for the snapshot: ${link.attempt}")

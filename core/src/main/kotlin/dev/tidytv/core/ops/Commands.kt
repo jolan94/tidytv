@@ -13,8 +13,8 @@ object Commands {
     private const val HOME_ARGS = "-a android.intent.action.MAIN -c android.intent.category.HOME"
 
     const val GETPROP = "getprop"
-    const val LIST_PACKAGES = "pm list packages"
-    const val LIST_DISABLED = "pm list packages -d"
+    const val LIST_PACKAGES = "pm list packages --user 0"
+    const val LIST_DISABLED = "pm list packages -d --user 0"
     const val RESOLVE_HOME = "cmd package resolve-activity --brief $HOME_ARGS"
     const val QUERY_HOME = "cmd package query-activities --brief $HOME_ARGS"
     const val MEMINFO = "cat /proc/meminfo"
@@ -32,7 +32,7 @@ object Commands {
     const val READ_REMOVED = "if [ -e $REMOVED_FILE ]; then cat $REMOVED_FILE; fi; echo END"
     const val CLEAR_REMOVED = "rm -f $REMOVED_FILE; echo cleared"
     /** Apps the owner installed (not preinstalled). */
-    const val LIST_USER_APPS = "pm list packages -3"
+    const val LIST_USER_APPS = "pm list packages -3 --user 0"
     /** Asks Android to free app caches until this much space is free, i.e. all of them. Safe: caches rebuild. */
     const val TRIM_CACHES = "pm trim-caches 999G; echo trimmed"
     /** The background clear leaves this file when it's finished; the phone polls it and the free space. */
@@ -48,7 +48,13 @@ object Commands {
     const val MEMINFO_PROCS = "dumpsys meminfo"
     const val BOOT_RECEIVERS = "cmd package query-receivers --brief -a android.intent.action.BOOT_COMPLETED"
     const val DF_DATA = "df /data"
-    const val INSTALL_TMP = "pm install -r $APK_TMP"
+    const val INSTALL_TMP = "pm install -r --user 0 $APK_TMP"
+    /** Google's install check that refuses sideloaded apps on some TVs (INSTALL_FAILED_VERIFICATION_FAILURE). */
+    const val VERIFIER_GET = "settings get global verifier_verify_adb_installs"
+    fun verifierSet(value: String): String {
+        require(value == "0" || value == "1") { "bad verifier value" }
+        return "settings put global verifier_verify_adb_installs $value"
+    }
     const val REMOVE_TMP = "rm -f $APK_TMP"
 
     fun settingsList(namespace: String): String {

@@ -236,8 +236,8 @@ private val HomeApp.tag: String? get() = when (this) {
 }
 
 private val HomeApp.blurb: String get() = when (this) {
-    HomeApp.SIMPLE -> "One calm screen with your apps, your HDMI inputs and a clock. Tiny (37 KB). Move apps around on the TV with the remote."
-    HomeApp.STYLED -> "A dock of your favourite apps with a glass highlight, a big clock and an inputs menu. About 480 KB, Android 8 or newer."
+    HomeApp.SIMPLE -> "One calm screen with your apps, your HDMI inputs and a clock. Tiny (37 KB). Move apps around on the TV with the remote. On some TVs the remote's Settings or app shortcut buttons stop working with a new home screen; you can switch back any time from Home screen on My TV."
+    HomeApp.STYLED -> "A dock of your favourite apps with a glass highlight, a big clock and an inputs menu. About 600 KB, Android 8 or newer. On some TVs the remote's Settings or app shortcut buttons stop working with a new home screen; you can switch back any time from Home screen on My TV."
     HomeApp.PROJECTIVY -> "A popular free launcher with rows you arrange yourself. Installed from the Play Store on your TV, so you always get the latest version."
 }
 

@@ -131,7 +131,19 @@ class LauncherHandover(
     private suspend fun install(apk: ByteArray): Boolean {
         tv.push(apk, Commands.APK_TMP)
         log.append(ActionRecord(clock(), Op.INSTALL, ourPkg, Phase.INTENT))
-        val install = tv.run(Commands.INSTALL_TMP)
+        var install = tv.run(Commands.INSTALL_TMP)
+        if (install.contains("INSUFFICIENT_STORAGE") || install.contains("not enough space", ignoreCase = true)) {
+            // Caches rebuild by themselves, so clearing them is safe, and it often frees enough for a 600 KB app.
+            runCatching { tv.run(Commands.TRIM_CACHES) }
+            install = tv.run(Commands.INSTALL_TMP)
+        }
+        if (install.contains("VERIFICATION_FAILURE")) {
+            // Google's install check turned the app away. Switch it off for this one install and put it back.
+            val before = tv.run(Commands.VERIFIER_GET).trim()
+            tv.run(Commands.verifierSet("0"))
+            install = tv.run(Commands.INSTALL_TMP)
+            tv.run(Commands.verifierSet(if (before == "0") "0" else "1"))
+        }
         tv.run(Commands.REMOVE_TMP)
         if (install.contains("Success")) {
             log.append(ActionRecord(clock(), Op.INSTALL, ourPkg, Phase.DONE))
@@ -154,7 +166,12 @@ class LauncherHandover(
 
         // 3. Start it before anything else changes; "Status: ok" and no "Error" line, both required.
         val extras = if (app.dockByConfig) emptyList() else dockApps
-        val start = tv.run(Commands.startLauncher(ours, extras, clock() / 1000))
+        var start = tv.run(Commands.startLauncher(ours, extras, clock() / 1000))
+        if (start.contains("does not exist")) {
+            // Installed, but not for the TV's main user (seen on Google TV 11 and 12): add it for user 0, then start again.
+            tv.run(Commands.installExisting(ourPkg))
+            start = tv.run(Commands.startLauncher(ours, extras, clock() / 1000))
+        }
         if (!start.contains("Status: ok") || Parse.lines(start).any { it.startsWith("Error") }) {
             return HandoverOutcome.StartFailed(start.trim())
         }
