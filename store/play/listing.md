@@ -1,0 +1,51 @@
+# TidyTV: Google Play listing (English)
+
+## App name (max 30)
+TidyTV: Debloat Android TV
+
+## Short description (max 80), the subtitle line
+Turn off TV ads and bloat from your phone. Remote and file sender included.
+
+## Full description (max 4000)
+Your TV, without the junk.
+
+Sponsored rows on the home screen. Apps you never opened running in the background. A TV that gets slower every year. TidyTV cleans up your Android TV or Google TV from your phone, over Wi-Fi, in about a minute. No computer, no cables, no technical knowledge.
+
+HOW IT WORKS
+1. Pick your TV and keep your phone on the same Wi-Fi.
+2. Press Allow once on the TV.
+3. TidyTV saves a backup, then shows the junk in simple groups: ads and tracking, preloaded apps, voice assistant and more.
+4. You choose what to switch off. TidyTV does it one app at a time and checks each one.
+
+NEVER DELETES, UNDO ANYTIME
+• A full backup is saved before every change. It can't be skipped.
+• Apps are turned off, not uninstalled. Nothing is deleted.
+• "Restore everything" turns it all back on with one tap, even after a Wi-Fi drop.
+• Important apps stay protected: Play Store, Play Services, keyboards, TV inputs, the remote, Bluetooth, Settings and setup apps are never touched.
+
+CLEANER HOME SCREEN (OPTIONAL)
+Pick a calm home screen with just your apps: no ads and no rows of suggestions. Choose Simple, an Apple TV style layout or Projectivy Launcher. Your old home screen comes back with Restore.
+
+MORE THAN A CLEAN-UP
+• Remote: use your phone as a remote with a D-pad, volume, power, play and pause, and a keyboard to type on the TV.
+• Apps on your TV: open any TV app from your phone.
+• Send files: send photos, videos, music and documents to the TV. They are saved in Downloads > TidyTV.
+• Check my TV: finds apps that a TV update quietly turned back on.
+
+BUILT FOR REAL TVS
+Clean-up lists are tested on a real TV for 93 models, including Sony, TCL, Xiaomi, Hisense, Philips, Chromecast with Google TV and NVIDIA Shield.
+
+WORKS WITH
+• Android TV and Google TV sets and boxes
+• Amazon Fire TV (clean-up, remote and file sending; Amazon's home screen stays)
+• Not supported: Samsung (Tizen) and LG (webOS) TVs, because they don't run Android. If yours has a Chromecast or Fire TV stick plugged in, TidyTV works with that.
+
+FREE, OPEN SOURCE, PRIVATE
+TidyTV is free and open source (MIT licence). It has no ads and no account. It doesn't collect anything about you or your TV. The only thing it ever sends is the feedback form, and only when you press Send.
+
+GOOD TO KNOW
+• Your phone needs Android 8 or newer.
+• The TV needs debugging switched on. TidyTV walks you through it step by step.
+• TidyTV isn't affiliated with Google, Amazon or any TV maker. Android TV, Google TV and Fire TV are trademarks of their owners.
+
+Tidy your TV in a minute. Download TidyTV and take your screen back.

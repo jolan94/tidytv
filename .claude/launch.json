@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "playstore-shots",
+      "runtimeExecutable": "/Users/joe/.bun/bin/bun",
+      "runtimeArgs": ["--cwd", "tools/playstore-shots", "dev"],
+      "port": 3000
+    }
+  ]
+}

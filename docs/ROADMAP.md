@@ -80,3 +80,13 @@ tv-detox home screen, restore everything. Everything below comes later.
 - GPL, ideas only: aShellYou (good remote file-browser UX), App Manager, SAI.
 - Size: send file ~450 LOC; browse TV files ~700; APK/split sideload ~1,000; send phone app ~400.
 - Done in 0.6.0: looks for the Apple TV style home screen (Classic, Aurora, Glass, Scenes from upstream themes/) and your own photo as the wallpaper, shrunk to 1920x1080 JPEG on the phone first. Add-ons (Photo Prints, Weather) deferred.
+
+## Requests from users (Play reviews and in-app feedback, 2026-10-20 to 2026-10-31)
+Closed in Winkle HQ as "recorded here". Order is by how often it was asked, not a promise.
+- **Custom DNS / DoH** besides the AdGuard Block ads switch (Play review, 0.9.0).
+- **Home screen extras:** weather and live-score widgets, more themes, resizing and reordering apps by remote or phone (4 asks plus GitHub #4; the steps page shipped in 0.10.1).
+- **Wallpaper:** done in 0.10.1 (send your own, 4K). Open: turn off the focus light effect.
+- **Remote:** pairing without ADB (Bluetooth / Android TV Remote Protocol v2, GitHub #7).
+- **Restore without the old phone:** a restore that works from a new phone or from the TV itself (asked 3 times).
+- **Translate the launcher** into more languages (German "last opened" is untranslated).
+- **TVs with no list yet** (asked through the app's "My TV isn't on a list" button): MECOOL KM6, Banoika FHD Streaming Stick (BKK), realme TV Stick (BOS), H96 Max V11 (rk3328_box), Airtel Xstream box. Check upstream cleanyourtv for each before writing anything.

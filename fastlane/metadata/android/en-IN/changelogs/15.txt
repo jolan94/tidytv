@@ -1,0 +1,5 @@
+What's new in 0.12.0
+• 481 TV lists, with the newest tested TVs from Sony, TCL, Philips, Xiaomi and more.
+• Latest Apple TV style home screen (3.5): remote keys like YouTube and Settings keep working better after the switch.
+• Better support for TVs that use their own home redirect.
+• Under-the-hood fixes to the home screen.
